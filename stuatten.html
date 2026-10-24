@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>stuatten — Smart Biometric Attendance System</title>
+<style>
+:root{--bg:#F0F4FF;--card:#fff;--text:#0F172A;--muted:#64748B;--border:#E2E8F0;--primary:#4F46E5;--pri-d:#3730A3;--success:#10B981;--danger:#EF4444;--warn:#F59E0B;--grad:linear-gradient(135deg,#4F46E5 0%,#7C3AED 100%);}
+[data-dark]{--bg:#0F172A;--card:#1E293B;--text:#F1F5F9;--muted:#94A3B8;--border:#334155;}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif;}
+body{background:var(--bg);color:var(--text);min-height:100vh;transition:.2s;}
+
+/* HEADER */
+.hdr{background:var(--grad);color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 20px rgba(79,70,229,.3);}
+.hdr-logo{font-size:1.3rem;font-weight:800;letter-spacing:-0.5px;}
+.hdr-sub{font-size:.7rem;opacity:.75;margin-top:1px;}
+.hdr-right{display:flex;gap:10px;align-items:center;}
+.hdr-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;padding:6px 14px;border-radius:20px;cursor:pointer;font-size:.78rem;font-weight:600;transition:.15s;}
+.hdr-btn:hover{background:rgba(255,255,255,.25);}
+
+/* MAIN */
+.main{max-width:980px;margin:0 auto;padding:20px 16px;}
+footer{text-align:center;padding:20px;color:var(--muted);font-size:.75rem;border-top:1px solid var(--border);margin-top:30px;}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.card-sm{padding:14px;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 20px;border:none;border-radius:10px;font-weight:700;font-size:.875rem;cursor:pointer;transition:.15s;gap:6px;}
+.btn:hover{filter:brightness(1.08);}
+.btn-p{background:var(--primary);color:#fff;}
+.btn-s{background:var(--success);color:#fff;}
+.btn-d{background:var(--danger);color:#fff;}
+.btn-o{background:transparent;border:2px solid var(--primary);color:var(--primary);}
+.btn-w{width:100%;}
+.btn-sm{padding:6px 14px;font-size:.75rem;border-radius:8px;}
+
+/* INPUTS */
+.inp{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:.9rem;transition:.15s;}
+.inp:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,.12);}
+.lbl{display:block;font-size:.8rem;color:var(--muted);font-weight:700;margin-bottom:5px;}
+.fg{margin-bottom:14px;}
+
+/* TABS */
+.tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:20px;overflow-x:auto;gap:2px;}
+.tab{padding:10px 18px;font-size:.85rem;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:.15s;border-radius:6px 6px 0 0;}
+.tab:hover{color:var(--primary);background:rgba(79,70,229,.05);}
+.tab.on{color:var(--primary);border-bottom-color:var(--primary);background:rgba(79,70,229,.06);}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:800;}
+.bs{background:rgba(16,185,129,.12);color:var(--success);}
+.bd{background:rgba(239,68,68,.12);color:var(--danger);}
+.bw{background:rgba(245,158,11,.12);color:var(--warn);}
+.bp{background:rgba(79,70,229,.12);color:var(--primary);}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse;}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:.84rem;}
+th{color:var(--muted);font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;}
+tr:hover td{background:rgba(79,70,229,.03);}
+
+/* PROGRESS */
+.pbar{height:8px;background:var(--border);border-radius:10px;overflow:hidden;margin-top:6px;}
+.pfill{height:100%;border-radius:10px;transition:width .5s ease;}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+@media(max-width:640px){.g2,.g3,.g4{grid-template-columns:1fr;}.hdr-right .hdr-btn:first-child{display:none;}}
+
+/* FLEX UTILS */
+.flex{display:flex;}.aic{align-items:center;}.jb{justify-content:space-between;}.jc{justify-content:center;}.gap{gap:12px;}.gap-s{gap:8px;}.wrap{flex-wrap:wrap;}
+
+/* STAT CARD */
+.stat{text-align:center;padding:20px 10px;}
+.stat .n{font-size:2rem;font-weight:800;}
+.stat .l{font-size:.72rem;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.5px;}
+
+/* AVATAR */
+.av{border-radius:50%;object-fit:cover;}
+.av56{width:56px;height:56px;border:3px solid rgba(255,255,255,.3);}
+.av80{width:80px;height:80px;border:3px solid var(--primary);}
+.av36{width:36px;height:36px;}
+
+/* TOAST */
+#toast{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;}
+.ti{padding:12px 20px;border-radius:12px;color:#fff;font-size:.85rem;font-weight:700;animation:sIn .3s;box-shadow:0 4px 16px rgba(0,0,0,.2);}
+@keyframes sIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* STEP DOTS */
+.sdots{display:flex;justify-content:center;align-items:center;gap:0;margin-bottom:24px;}
+.sd{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:#fff;background:var(--border);color:var(--muted);}
+.sd.on{background:var(--primary);color:#fff;box-shadow:0 0 0 4px rgba(79,70,229,.2);}
+.sd.done{background:var(--success);color:#fff;}
+.sl{width:30px;height:3px;background:var(--border);}
+.sl.done{background:var(--success);}
+
+/* PROFILE INFO ROWS */
+.prow{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:.875rem;}
+.prow .pk{color:var(--muted);font-weight:600;}
+.prow .pv{font-weight:700;}
+
+/* LOGIN */
+.login-wrap{max-width:420px;margin:50px auto;padding:0 16px;}
+.logo-big{font-size:2.8rem;font-weight:800;color:var(--primary);letter-spacing:-1px;}
+.logo-sub{color:var(--muted);font-size:.85rem;margin-top:4px;margin-bottom:28px;}
+
+/* NOTIF */
+.notif{padding:14px;border-radius:12px;border:1px solid var(--border);background:var(--card);margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;}
+.notif.unread{border-left:4px solid var(--primary);}
+
+/* NAV CARDS */
+.nav-card{padding:20px 16px;border-radius:14px;border:1px solid var(--border);background:var(--card);text-align:center;cursor:pointer;transition:.15s;}
+.nav-card:hover{border-color:var(--primary);box-shadow:0 4px 20px rgba(79,70,229,.12);transform:translateY(-2px);}
+.nav-card .icon{font-size:1.8rem;margin-bottom:8px;}
+.nav-card .lbl{font-weight:700;font-size:.875rem;}
+.nav-card .sub{font-size:.72rem;color:var(--muted);margin-top:3px;}
+
+/* MISC */
+.tc{text-align:center;}.fw-b{font-weight:700;}.fw-8{font-weight:800;}
+.c-p{color:var(--primary);}.c-s{color:var(--success);}.c-d{color:var(--danger);}.c-m{color:var(--muted);}
+.fs-xs{font-size:.72rem;}.fs-s{font-size:.82rem;}.mb-1{margin-bottom:6px;}.mb-2{margin-bottom:12px;}.mb-3{margin-bottom:20px;}.mt-1{margin-top:6px;}.mt-2{margin-top:12px;}.mt-3{margin-top:20px;}
+.hide{display:none!important;}
+.separator{height:1px;background:var(--border);margin:16px 0;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="hdr" class="hdr hide">
+  <div>
+    <div class="hdr-logo">🎓 stuatten</div>
+    <div class="hdr-sub" id="hdr-info">Smart Biometric Attendance</div>
+  </div>
+  <div class="hdr-right">
+    <button class="hdr-btn" onclick="toggleDark()">🌙 Dark</button>
+    <button class="hdr-btn" onclick="logout()">⬅ Logout</button>
+  </div>
+</div>
+
+<div class="main" id="app">
+
+<!-- ══════════════════════════ LOGIN ══════════════════════════ -->
+<div id="v-login" class="login-wrap">
+  <div class="tc mb-3">
+    <div class="logo-big">stuatten</div>
+    <div class="logo-sub">Smart Biometric Attendance System<br>AKTU Compatible · Anti-Proxy Engine</div>
+  </div>
+  <div class="card">
+    <div class="tabs" id="rtabs" style="margin-bottom:16px;">
+      <div class="tab on" onclick="setRole('STUDENT',this)">Student</div>
+      <div class="tab" onclick="setRole('TEACHER',this)">Teacher</div>
+      <div class="tab" onclick="setRole('ADMIN',this)">Admin</div>
+    </div>
+    <div style="background:rgba(79,70,229,.07);padding:12px 14px;border-radius:10px;margin-bottom:16px;">
+      <div class="fs-xs fw-b c-p mb-1">⚡ Quick Demo Login:</div>
+      <div class="flex gap-s wrap">
+        <button class="btn btn-sm btn-o" onclick="fill('STUDENT')">Student Demo</button>
+        <button class="btn btn-sm btn-o" onclick="fill('TEACHER')">Teacher Demo</button>
+        <button class="btn btn-sm btn-o" onclick="fill('ADMIN')">Admin Demo</button>
+      </div>
+    </div>
+    <div class="fg"><label class="lbl" id="lbl-id">AKTU Roll Number</label><input class="inp" id="f-id" placeholder="e.g. 2100270100001" onkeydown="if(event.key==='Enter')login()"></div>
+    <div class="fg"><label class="lbl">Password</label><input class="inp" id="f-pw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()"></div>
+    <div id="l-err" class="hide fs-s c-d mb-2" style="padding:8px 12px;background:rgba(239,68,68,.08);border-radius:8px;"></div>
+    <button class="btn btn-p btn-w" onclick="login()">🔐 Secure Login</button>
+    <div class="tc fs-xs c-m mt-2">Protected by GPS Geofence · Biometric Auth · Device Lock</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ STUDENT ══════════════════════════ -->
+<div id="v-student" class="hide">
+  <div class="tabs" id="stabs">
+    <div class="tab on" onclick="sTab('dash',this)">📊 Dashboard</div>
+    <div class="tab" onclick="sTab('mark',this)">📍 Mark Attendance</div>
+    <div class="tab" onclick="sTab('hist',this)">📋 History</div>
+    <div class="tab" onclick="sTab('notif',this)">🔔 Alerts <span id="nbadge" class="badge bd" style="font-size:.65rem;display:none;"></span></div>
+    <div class="tab" onclick="sTab('prof',this)">👤 Profile</div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="s-dash">
+    <div class="card flex aic gap" style="background:var(--grad);color:#fff;border:none;">
+      <img class="av av56" id="s-av" src="">
+      <div style="flex:1">
+        <div class="fw-8" style="font-size:1.1rem" id="s-name"></div>
+        <div style="opacity:.8;font-size:.8rem" id="s-roll"></div>
+        <div style="opacity:.7;font-size:.72rem" id="s-branch"></div>
+      </div>
+      <div class="tc">
+        <div style="opacity:.8;font-size:.7rem">Overall Attendance</div>
+        <div class="fw-8" style="font-size:2.4rem;line-height:1" id="s-pct">—%</div>
+        <div id="s-def" class="hide badge bd mt-1" style="background:rgba(239,68,68,.25);color:#fff;">⚠️ DEFAULTER</div>
+      </div>
+    </div>
+
+    <div class="g2 mb-3" style="margin-top:0">
+      <div class="nav-card" onclick="sTab('mark')"><div class="icon">📍</div><div class="lbl">Mark Attendance</div><div class="sub">50m Geofence Lock</div></div>
+      <div class="nav-card" onclick="sTab('hist')"><div class="icon">📊</div><div class="lbl">History</div><div class="sub">All lecture records</div></div>
+      <div class="nav-card" onclick="sTab('notif')"><div class="icon">🔔</div><div class="lbl">Notifications</div><div class="sub">Updates & alerts</div></div>
+      <div class="nav-card" onclick="sTab('prof')"><div class="icon">👤</div><div class="lbl">My Profile</div><div class="sub">AKTU credentials</div></div>
+    </div>
+
+    <div class="fw-b mb-2">Subject-wise Attendance</div>
+    <div id="s-subs"></div>
+  </div>
+
+  <!-- Mark Attendance -->
+  <div id="s-mark" class="hide">
+    <div class="sdots" id="sdots"></div>
+    <div id="ms1"><div class="card"><div class="fw-b mb-1">Step 1: Select Active Session</div><div class="fs-s c-m mb-3">Choose a live session created by your teacher.</div><div id="sess-list"></div></div></div>
+    <div id="ms2" class="hide"><div class="card tc" style="padding:30px 20px"><div class="fw-b mb-3">Step 2: GPS Location Verification</div><div style="font-size:3.5rem">📍</div><div class="fw-8 c-s mt-2" style="font-size:1.5rem">14.2 m away</div><div class="fs-s c-m mt-1">✅ Within allowed 50m classroom radius</div><div class="pbar mt-3" style="max-width:240px;margin:12px auto 0"><div class="pfill" style="width:71%;background:var(--success)"></div></div><button class="btn btn-p btn-w mt-3" style="max-width:280px" onclick="mStep(3)">Next: Biometric Auth →</button></div></div>
+    <div id="ms3" class="hide"><div class="card tc" style="padding:30px 20px"><div class="fw-b mb-3">Step 3: Biometric Authentication</div><div style="font-size:4rem;cursor:pointer" onclick="mStep(4)">👆</div><div class="fw-b mt-2">Place your finger on the sensor</div><div class="fs-s c-m mt-1">Fingerprint / Face ID supported</div><button class="btn btn-p btn-w mt-3" style="max-width:280px" onclick="mStep(4)">Authenticate ✓</button></div></div>
+    <div id="ms4" class="hide"><div class="card tc" style="padding:30px 20px"><div class="fw-b mb-3">Step 4: Identity Confirmation</div><img class="av av80" id="mk-photo" style="margin:0 auto 12px;display:block"><div class="fw-8 fs-s" id="mk-name"></div><div class="fs-xs c-m" id="mk-roll2"></div><div class="badge bs mt-2">✓ Official Approved Photo</div><button class="btn btn-s btn-w mt-3" style="max-width:280px" onclick="submitAtt()">✅ Confirm & Submit Attendance</button></div></div>
+    <div id="ms5" class="hide"><div class="card tc" style="padding:50px 20px"><div id="mk-icon" style="font-size:4.5rem">🎉</div><div class="fw-8 mt-3" style="font-size:1.4rem" id="mk-title"></div><div class="fs-s c-m mt-2" id="mk-msg"></div><div class="badge bs mt-3" id="mk-time"></div><button class="btn btn-o mt-3" onclick="sTab('dash')">← Back to Dashboard</button></div></div>
+  </div>
+
+  <!-- History -->
+  <div id="s-hist" class="hide">
+    <div class="card">
+      <div class="flex jb aic mb-3 wrap gap-s">
+        <div class="fw-b" style="font-size:1rem">Attendance History</div>
+        <div class="flex gap-s">
+          <span class="badge bs" id="hp-cnt">0 Present</span>
+          <span class="badge bd" id="ha-cnt">0 Absent</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table><thead><tr><th>Date</th><th>Subject</th><th>Status</th><th>Distance</th><th>Time</th></tr></thead>
+        <tbody id="hist-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div id="s-notif" class="hide"><div id="notif-list"></div></div>
+
+  <!-- Profile -->
+  <div id="s-prof" class="hide">
+    <div class="card" style="max-width:500px;margin:0 auto">
+      <div class="tc mb-3">
+        <img class="av av80" id="p-img" style="display:block;margin:0 auto 10px">
+        <span class="badge bs" id="p-vstatus">✓ Official Verified</span>
+        <div class="fw-8 mt-2" style="font-size:1.1rem" id="p-name2"></div>
+      </div>
+      <div id="p-rows"></div>
+      <div class="separator"></div>
+      <div class="fw-b mb-1">Update Profile Photo</div>
+      <div class="fs-xs c-m mb-2">⚠️ Requires teacher/admin approval before it takes effect.</div>
+      <div class="flex gap-s"><input class="inp" id="p-url" placeholder="Paste new photo URL here..."><button class="btn btn-p btn-sm" onclick="reqPhoto()">Submit</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ TEACHER ══════════════════════════ -->
+<div id="v-teacher" class="hide">
+  <div class="tabs" id="ttabs">
+    <div class="tab on" onclick="tTab('dash',this)">Dashboard</div>
+    <div class="tab" onclick="tTab('create',this)">Create Session</div>
+    <div class="tab" onclick="tTab('roster',this)">Live Roster</div>
+    <div class="tab" onclick="tTab('thist',this)">Session History</div>
+  </div>
+
+  <!-- Teacher Dashboard -->
+  <div id="t-dash">
+    <div class="card" style="background:var(--grad);color:#fff;border:none;">
+      <div class="fs-xs" style="opacity:.75;text-transform:uppercase;letter-spacing:.5px">Faculty Portal</div>
+      <div class="fw-8" style="font-size:1.4rem" id="t-name">Dr. Rajesh Kumar</div>
+      <div style="opacity:.8;font-size:.85rem" id="t-dept">Computer Science & Engineering</div>
+      <div style="opacity:.7;font-size:.75rem;margin-top:4px">Faculty ID: T1001 · AKTU Affiliated College</div>
+    </div>
+    <div class="flex gap mb-3 wrap">
+      <button class="btn btn-p" style="flex:1;min-width:160px" onclick="tTab('create')">➕ Create Attendance Session</button>
+      <button class="btn btn-o" style="flex:1;min-width:160px" onclick="tTab('roster')">📡 Live Roster</button>
+    </div>
+    <div class="fw-b mb-2">Assigned AKTU Subjects</div>
+    <div class="g2" id="t-subs"></div>
+  </div>
+
+  <!-- Create Session -->
+  <div id="t-create" class="hide">
+    <div class="card" style="max-width:540px;margin:0 auto">
+      <div class="fw-8 mb-3" style="font-size:1.1rem">📋 Create New Attendance Session</div>
+      <div class="fg"><label class="lbl">Subject</label>
+        <select class="inp" id="cs-sub">
+          <option value="KCS-501">KCS-501 — Web Technology</option>
+          <option value="KCS-502">KCS-502 — Database Management Systems</option>
+          <option value="KCS-503">KCS-503 — Design &amp; Analysis of Algorithms</option>
+          <option value="KNC-501">KNC-501 — Constitution of India</option>
+        </select>
+      </div>
+      <div class="g2">
+        <div class="fg"><label class="lbl">Branch</label><input class="inp" id="cs-br" value="CSE"></div>
+        <div class="fg"><label class="lbl">Section</label><input class="inp" id="cs-sec" value="A"></div>
+      </div>
+      <div class="fg"><label class="lbl">Semester</label><input class="inp" id="cs-sem" value="5th Sem"></div>
+      <div class="fg"><label class="lbl">Allowed Radius: <span id="cs-rv">50</span>m</label>
+        <input type="range" id="cs-rad" min="10" max="200" value="50" style="width:100%;accent-color:var(--primary)" oninput="document.getElementById('cs-rv').textContent=this.value">
+      </div>
+      <div class="fg"><label class="lbl">Duration (minutes)</label><input class="inp" type="number" id="cs-dur" value="50"></div>
+      <div class="card card-sm" style="background:rgba(79,70,229,.06);text-align:center;margin-bottom:14px">
+        <div class="fs-s">📍 GPS Location Captured</div>
+        <div class="fs-xs c-m">28.6139° N, 77.2090° E · New Delhi</div>
+      </div>
+      <button class="btn btn-p btn-w" onclick="createSess()">🚀 Start Session</button>
+      <div id="cs-ok" class="hide mt-3 tc">
+        <div class="fw-8 c-s mb-2">✅ Session Created Successfully!</div>
+        <div style="width:200px;height:200px;margin:0 auto;background:#000;border-radius:12px;display:flex;align-items:center;justify-content:center;position:relative;" id="qr-box">
+          <canvas id="qr-canvas" width="180" height="180"></canvas>
+        </div>
+        <div class="fs-xs c-m mt-2">Students scan QR code or select from active sessions</div>
+        <button class="btn btn-o btn-sm mt-2" onclick="tTab('roster')">📡 View Live Roster →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Roster -->
+  <div id="t-roster" class="hide">
+    <div class="flex jb aic mb-2 wrap gap-s">
+      <div>
+        <div class="fw-8" style="font-size:1.05rem">Live Roster: <span class="c-p" id="r-subj">KCS-501</span></div>
+        <div class="fs-xs c-m">Session: SESS_DEMO_KCS501</div>
+      </div>
+      <div class="flex gap-s wrap">
+        <button class="btn btn-s btn-sm" onclick="exportXls()">📥 Export Excel</button>
+        <button class="btn btn-sm btn-o" onclick="exportPdf()">📄 PDF</button>
+        <button class="btn btn-d btn-sm" onclick="closeSess()">🔴 Close Session</button>
+      </div>
+    </div>
+    <div class="g3 mb-3">
+      <div class="card stat"><div class="n c-s" id="r-p">0</div><div class="l">Present</div></div>
+      <div class="card stat"><div class="n c-d" id="r-a">0</div><div class="l">Absent</div></div>
+      <div class="card stat"><div class="n" id="r-t">0</div><div class="l">Total</div></div>
+    </div>
+    <input class="inp mb-2" id="r-search" placeholder="🔍 Search by name or roll number..." oninput="filterR()">
+    <div class="card" style="padding:0;overflow-x:auto">
+      <table><thead><tr><th>Student</th><th>Roll No</th><th>Status</th><th>Distance</th><th>Time</th><th>Action</th></tr></thead>
+      <tbody id="r-body"></tbody></table>
+    </div>
+  </div>
+
+  <!-- Session History -->
+  <div id="t-thist" class="hide">
+    <div class="flex gap-s mb-3 wrap">
+      <button class="btn btn-sm btn-p" onclick="filtSess('ALL')">All</button>
+      <button class="btn btn-sm btn-o" onclick="filtSess('ACTIVE')">🟢 Active</button>
+      <button class="btn btn-sm btn-o" onclick="filtSess('CLOSED')">🔴 Closed</button>
+    </div>
+    <div id="t-sess-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ ADMIN ══════════════════════════ -->
+<div id="v-admin" class="hide">
+  <div class="tabs" id="atabs">
+    <div class="tab on" onclick="aTab('analytics',this)">Analytics</div>
+    <div class="tab" onclick="aTab('defaulters',this)">⚠️ Defaulters</div>
+    <div class="tab" onclick="aTab('photos',this)">📸 Photo Approvals</div>
+    <div class="tab" onclick="aTab('audit',this)">🔒 Audit Logs</div>
+  </div>
+  <div id="a-analytics">
+    <div class="g4 mb-3" id="a-stats"></div>
+    <div class="g2">
+      <div class="card"><div class="fw-b mb-3">Branch-wise Attendance</div><div id="a-branches"></div></div>
+      <div class="card"><div class="fw-b mb-3">Active Sessions Today</div><div id="a-sessions"></div></div>
+    </div>
+  </div>
+  <div id="a-defaulters" class="hide">
+    <div class="fw-b c-d mb-2">Defaulter Students (&lt;75% Attendance)</div>
+    <div class="card" style="padding:0;overflow-x:auto"><table><thead><tr><th>Roll Number</th><th>Name</th><th>Branch</th><th>Sec</th><th>Attendance</th></tr></thead><tbody id="a-def-body"></tbody></table></div>
+  </div>
+  <div id="a-photos" class="hide">
+    <div class="fw-b mb-2">Pending Profile Photo Approvals</div>
+    <div class="g3" id="a-photo-list"></div>
+  </div>
+  <div id="a-audit" class="hide">
+    <div class="fw-b mb-2">Security Audit Log</div>
+    <div class="card" style="padding:0;overflow-x:auto"><table><thead><tr><th>Action</th><th>User</th><th>Role</th><th>Details</th><th>Time</th></tr></thead><tbody id="a-log-body"></tbody></table></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<footer>© 2026 stuatten — Smart Biometric Attendance System (AKTU Compatible) · All Rights Reserved</footer>
+<div id="toast"></div>
+
+<script>
+/* ─────────────────── DEMO DATA ─────────────────── */
+const D = {
+  users: {
+    '2100270100001': { pw:'studentpassword', role:'STUDENT', name:'Amit Kumar Singh', roll:'2100270100001', branch:'CSE', year:'3rd Year', sem:'5th Sem', sec:'A', email:'amit.singh@aktu.ac.in', mobile:'9988776655', dept:'Computer Science', photo:'https://ui-avatars.com/api/?name=Amit+Kumar&background=4F46E5&color=fff&size=120', photoApproved:true },
+    '2100270100002': { pw:'studentpassword', role:'STUDENT', name:'Priya Sharma', roll:'2100270100002', branch:'CSE', year:'3rd Year', sem:'5th Sem', sec:'A', email:'priya.sharma@aktu.ac.in', mobile:'9988776656', dept:'Computer Science', photo:'https://ui-avatars.com/api/?name=Priya+Sharma&background=7C3AED&color=fff&size=120', photoApproved:true },
+    'T1001': { pw:'teacherpassword', role:'TEACHER', name:'Prof. Rajesh Kumar', id:'T1001', dept:'Computer Science & Engineering', subjects:['KCS-501','KCS-502','KCS-503'], photo:'https://ui-avatars.com/api/?name=Rajesh+Kumar&background=0D9488&color=fff' },
+    'admin': { pw:'adminpassword123', role:'ADMIN', name:'System Administrator', id:'admin' }
+  },
+  subjects: [
+    { code:'KCS-501', name:'Web Technology', total:24, attended:22, pct:92 },
+    { code:'KCS-502', name:'Database Management Systems', total:26, attended:23, pct:88 },
+    { code:'KCS-503', name:'Design & Analysis of Algorithms', total:28, attended:21, pct:75 },
+    { code:'KNC-501', name:'Constitution of India', total:15, attended:11, pct:73 }
+  ],
+  sessions: [
+    { id:'SESS_DEMO_KCS501', code:'KCS-501', name:'Web Technology', faculty:'Prof. Rajesh Kumar', branch:'CSE', sec:'A', sem:'5th Sem', date:'2026-10-10', start:'10:00 AM', end:'11:00 AM', radius:50, active:true }
+  ],
+  roster: [
+    { roll:'2100270100001', name:'Amit Kumar Singh', status:'PRESENT', dist:14.2, time:'10:05 AM', photo:'https://ui-avatars.com/api/?name=AK&background=4F46E5&color=fff&size=36' },
+    { roll:'2100270100002', name:'Priya Sharma', status:'PRESENT', dist:8.7, time:'10:03 AM', photo:'https://ui-avatars.com/api/?name=PS&background=7C3AED&color=fff&size=36' },
+    { roll:'2100270100003', name:'Rahul Verma', status:'ABSENT', dist:null, time:null, photo:'https://ui-avatars.com/api/?name=RV&background=EF4444&color=fff&size=36' },
+    { roll:'2100270100004', name:'Sneha Yadav', status:'PRESENT', dist:22.1, time:'10:07 AM', photo:'https://ui-avatars.com/api/?name=SY&background=10B981&color=fff&size=36' },
+    { roll:'2100270100005', name:'Vikash Gupta', status:'ABSENT', dist:null, time:null, photo:'https://ui-avatars.com/api/?name=VG&background=F59E0B&color=fff&size=36' }
+  ],
+  history: [
+    { date:'2026-10-10', code:'KCS-501', name:'Web Technology', status:'PRESENT', dist:'14.2m', time:'10:05 AM' },
+    { date:'2026-10-09', code:'KCS-502', name:'Database Mgmt', status:'PRESENT', dist:'22.5m', time:'11:03 AM' },
+    { date:'2026-10-08', code:'KCS-503', name:'DAA', status:'ABSENT', dist:'—', time:'—' },
+    { date:'2026-10-07', code:'KCS-501', name:'Web Technology', status:'PRESENT', dist:'8.9m', time:'10:02 AM' },
+    { date:'2026-10-06', code:'KNC-501', name:'Constitution', status:'PRESENT', dist:'31.1m', time:'09:05 AM' },
+    { date:'2026-10-05', code:'KCS-502', name:'Database Mgmt', status:'ABSENT', dist:'—', time:'—' },
+    { date:'2026-10-04', code:'KCS-503', name:'DAA', status:'PRESENT', dist:'18.3m', time:'11:06 AM' }
+  ],
+  notifs: [
+    { id:1, type:'ATTENDANCE', title:'Attendance Marked ✅', msg:'PRESENT for KCS-501 (Web Technology) — 14.2m distance', time:'Just now', read:false },
+    { id:2, type:'WARNING', title:'Low Attendance ⚠️', msg:'Your attendance in KNC-501 is at 73%. Minimum required is 75%.', time:'2 hours ago', read:false },
+    { id:3, type:'INFO', title:'Photo Approved ✅', msg:'Your profile photo has been verified and approved by admin.', time:'1 day ago', read:true },
+    { id:4, type:'INFO', title:'Session Started', msg:'Prof. Rajesh Kumar started KCS-502 session. Mark attendance now.', time:'2 days ago', read:true }
+  ],
+  pastSessions: [
+    { id:'SESS_01', code:'KCS-501', name:'Web Technology', branch:'CSE', sec:'A', date:'2026-10-09', start:'10:00 AM', end:'11:00 AM', present:43, total:50, active:false },
+    { id:'SESS_02', code:'KCS-502', name:'DBMS', branch:'CSE', sec:'A', date:'2026-10-08', start:'11:00 AM', end:'12:00 PM', present:38, total:50, active:false },
+    { id:'SESS_DEMO_KCS501', code:'KCS-501', name:'Web Technology', branch:'CSE', sec:'A', date:'2026-10-10', start:'10:00 AM', end:'11:00 AM', present:3, total:5, active:true }
+  ],
+  adminStats: { students:480, teachers:34, depts:6, subjects:42, defaulters:18, sessions:156, pendingPhotos:2 },
+  defaulters: [
+    { roll:'2100270100088', name:'Vikash Sharma', branch:'CSE', sec:'B', pct:62 },
+    { roll:'2100270100094', name:'Ananya Gupta', branch:'ECE', sec:'A', pct:58 },
+    { roll:'2100270100095', name:'Deepak Yadav', branch:'ME', sec:'A', pct:52 },
+    { roll:'2100270100096', name:'Ritu Mishra', branch:'IT', sec:'B', pct:69 },
+    { roll:'2100270100097', name:'Sanjay Kumar', branch:'CSE', sec:'C', pct:71 }
+  ],
+  pendingPhotos: [
+    { roll:'2100270100003', name:'Rahul Verma', img:'https://ui-avatars.com/api/?name=Rahul+Verma&background=4F46E5&color=fff&size=120' },
+    { roll:'2100270100010', name:'Neha Singh', img:'https://ui-avatars.com/api/?name=Neha+Singh&background=7C3AED&color=fff&size=120' }
+  ],
+  auditLogs: [
+    { action:'ATTENDANCE_MARKED', user:'2100270100001', role:'STUDENT', detail:'KCS-501, 14.2m, biometric ✓', time:'10:05 AM today' },
+    { action:'SESSION_CREATED', user:'T1001', role:'TEACHER', detail:'KCS-501 session, 50m radius', time:'09:55 AM today' },
+    { action:'LOGIN_SUCCESS', user:'T1001', role:'TEACHER', detail:'Web Browser, 10.229.114.39', time:'09:50 AM today' },
+    { action:'PHOTO_APPROVED', user:'admin', role:'ADMIN', detail:'Roll: 2100270100001', time:'Yesterday 4:30 PM' },
+    { action:'DUPLICATE_BLOCKED', user:'2100270100002', role:'STUDENT', detail:'Already marked for KCS-501', time:'Yesterday 10:08 AM' },
+    { action:'GEOFENCE_VIOLATION', user:'2100270100099', role:'STUDENT', detail:'Distance: 124m > 50m limit', time:'Yesterday 10:01 AM' }
+  ],
+  branches: [
+    { name:'CSE', pct:84, students:180 },
+    { name:'ECE', pct:79, students:120 },
+    { name:'ME', pct:76, students:90 },
+    { name:'IT', pct:81, students:90 }
+  ]
+};
+
+/* ─────────────────── STATE ─────────────────── */
+let user=null, role=null, loginRole='STUDENT';
+let rosterFull=[...D.roster], selSess=null, sessFilter='ALL';
+let dark=false;
+
+/* ─────────────────── UTILS ─────────────────── */
+function $(id){return document.getElementById(id);}
+function toast(msg,ok=true){
+  const el=document.createElement('div');el.className='ti';
+  el.style.background=ok?'var(--success)':'var(--danger)';
+  el.textContent=msg;$('toast').appendChild(el);
+  setTimeout(()=>el.remove(),3500);
+}
+function toggleDark(){
+  dark=!dark;document.documentElement.toggleAttribute('data-dark',dark);
+  $('theme-btn-txt')&&($('theme-btn-txt').textContent=dark?'☀️ Light':'🌙 Dark');
+  document.querySelectorAll('.hdr-btn')[0].textContent=dark?'☀️ Light':'🌙 Dark';
+}
+
+/* ─────────────────── LOGIN ─────────────────── */
+function setRole(r,el){
+  loginRole=r;
+  document.querySelectorAll('#rtabs .tab').forEach(t=>t.classList.remove('on'));
+  el&&el.classList.add('on');
+  $('lbl-id').textContent={STUDENT:'AKTU Roll Number',TEACHER:'Faculty ID',ADMIN:'Username'}[r];
+  $('l-err').classList.add('hide');
+}
+function fill(r){
+  setRole(r,document.querySelector(`#rtabs .tab[onclick*="${r}"]`));
+  const c={STUDENT:['2100270100001','studentpassword'],TEACHER:['T1001','teacherpassword'],ADMIN:['admin','adminpassword123']};
+  $('f-id').value=c[r][0];$('f-pw').value=c[r][1];
+}
+function login(){
+  const id=$('f-id').value.trim(), pw=$('f-pw').value;
+  if(!id||!pw){showErr('Please enter both ID and password.');return;}
+  const u=D.users[id];
+  if(!u||u.pw!==pw||u.role!==loginRole){showErr('❌ Invalid credentials. Try the demo buttons above.');return;}
+  user=u;role=u.role;
+  localStorage.setItem('sa_user',JSON.stringify({id,role}));
+  showApp();
+}
+function showErr(m){const e=$('l-err');e.textContent=m;e.classList.remove('hide');}
+function logout(){
+  user=null;role=null;localStorage.removeItem('sa_user');
+  $('hdr').classList.add('hide');
+  ['v-student','v-teacher','v-admin'].forEach(v=>$(v).classList.add('hide'));
+  $('v-login').classList.remove('hide');
+  $('f-id').value='';$('f-pw').value='';$('l-err').classList.add('hide');
+}
+
+/* ─────────────────── SHOW APP ─────────────────── */
+function showApp(){
+  $('v-login').classList.add('hide');
+  $('hdr').classList.remove('hide');
+  if(role==='STUDENT'){$('v-student').classList.remove('hide');loadStudent();}
+  else if(role==='TEACHER'){$('v-teacher').classList.remove('hide');loadTeacher();}
+  else if(role==='ADMIN'){$('v-admin').classList.remove('hide');loadAdmin();}
+  const info={STUDENT:user.name+' · Roll: '+user.roll,TEACHER:user.name+' · '+user.dept,ADMIN:'Administrator'}[role];
+  $('hdr-info').textContent=role.charAt(0)+role.slice(1).toLowerCase()+' — '+info;
+}
+
+/* ─────────────────── TAB SWITCHERS ─────────────────── */
+function sTab(t,el){
+  ['s-dash','s-mark','s-hist','s-notif','s-prof'].forEach(x=>$(x).classList.add('hide'));
+  $('s-'+t).classList.remove('hide');
+  el&&(document.querySelectorAll('#stabs .tab').forEach(x=>x.classList.remove('on')),el.classList.add('on'));
+  if(t==='mark')initMark();
+  if(t==='hist')loadHist();
+  if(t==='notif')loadNotifs();
+  if(t==='prof')loadProf();
+}
+function tTab(t,el){
+  ['t-dash','t-create','t-roster','t-thist'].forEach(x=>$(x).classList.add('hide'));
+  $('t-'+t).classList.remove('hide');
+  el&&(document.querySelectorAll('#ttabs .tab').forEach(x=>x.classList.remove('on')),el.classList.add('on'));
+  if(t==='roster')loadRoster();
+  if(t==='thist')loadTSess();
+}
+function aTab(t,el){
+  ['a-analytics','a-defaulters','a-photos','a-audit'].forEach(x=>$(x).classList.add('hide'));
+  $('a-'+t).classList.remove('hide');
+  el&&(document.querySelectorAll('#atabs .tab').forEach(x=>x.classList.remove('on')),el.classList.add('on'));
+}
+
+/* ─────────────────── STUDENT LOAD ─────────────────── */
+function loadStudent(){
+  const pct=Math.round(D.subjects.reduce((a,s)=>a+s.pct,0)/D.subjects.length);
+  $('s-av').src=user.photo;$('s-name').textContent=user.name;
+  $('s-roll').textContent='AKTU Roll: '+user.roll;
+  $('s-branch').textContent=user.branch+' • '+user.sem+' • Sec '+user.sec;
+  $('s-pct').textContent=pct+'%';
+  if(pct<75)$('s-def').classList.remove('hide');else $('s-def').classList.add('hide');
+
+  // subjects
+  $('s-subs').innerHTML=D.subjects.map(s=>{
+    const c=s.pct<75?'var(--danger)':'var(--success)';
+    return `<div class="card card-sm mb-2">
+      <div class="flex jb aic"><div><span class="badge bp fs-xs">${s.code}</span> <span class="fw-b fs-s">${s.name}</span></div>
+      <span class="fw-8" style="color:${c};font-size:1.1rem">${s.pct}%</span></div>
+      <div class="pbar"><div class="pfill" style="width:${s.pct}%;background:${c}"></div></div>
+      <div class="fs-xs c-m mt-1">${s.attended} / ${s.total} lectures attended${s.pct<75?' · ⚠️ Below 75%':''}</div></div>`;
+  }).join('');
+
+  // notification badge
+  const unread=D.notifs.filter(n=>!n.read).length;
+  if(unread){$('nbadge').textContent=unread;$('nbadge').style.display='inline';}else $('nbadge').style.display='none';
+}
+
+/* ─────────────────── MARK ATTENDANCE ─────────────────── */
+function initMark(){
+  selSess=null;mStep(1);
+  $('sess-list').innerHTML=D.sessions.map(s=>`
+    <div class="card card-sm flex jb aic" style="cursor:pointer;border-color:var(--primary)" onclick="pickSess('${s.id}')">
+      <div><span class="badge bp fs-xs">${s.code}</span><br><span class="fw-b">${s.name}</span>
+      <div class="fs-xs c-m">${s.faculty} · ${s.date} · ${s.start}</div></div>
+      <span class="badge bs">● LIVE</span></div>`).join('');
+}
+function drawSteps(cur){
+  let h='';for(let i=1;i<=5;i++){
+    if(i>1)h+=`<div class="sl ${i<=cur?'done':''}"></div>`;
+    h+=`<div class="sd ${i<cur?'done':i===cur?'on':''}">${i<cur?'✓':i}</div>`;
+  }$('sdots').innerHTML=h;
+}
+function mStep(n){
+  [1,2,3,4,5].forEach(i=>$('ms'+i).classList.add('hide'));
+  $('ms'+n).classList.remove('hide');drawSteps(n);
+}
+function pickSess(id){
+  selSess=D.sessions.find(s=>s.id===id);mStep(2);
+}
+function submitAtt(){
+  const now=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  // Update demo data
+  D.history.unshift({date:'2026-10-10',code:selSess?.code||'KCS-501',name:selSess?.name||'Web Technology',status:'PRESENT',dist:'14.2m',time:now});
+  $('mk-icon').textContent='🎉';
+  $('mk-title').textContent='Attendance Marked!';$('mk-title').style.color='var(--success)';
+  $('mk-msg').textContent='Your attendance for '+( selSess?.name||'Web Technology')+' has been recorded.';
+  $('mk-time').textContent='✅ '+now+' · Distance: 14.2m · Biometric: Verified';
+  toast('✅ Attendance marked successfully!');mStep(5);
+}
+
+/* ─────────────────── HISTORY ─────────────────── */
+function loadHist(){
+  let p=0,a=0;
+  $('hist-body').innerHTML=D.history.map(h=>{
+    if(h.status==='PRESENT')p++;else a++;
+    return `<tr><td>${h.date}</td><td><span class="fw-b c-p">${h.code}</span><br><span class="fs-xs c-m">${h.name}</span></td>
+    <td><span class="badge ${h.status==='PRESENT'?'bs':'bd'}">${h.status}</span></td>
+    <td class="fs-s">${h.dist}</td><td class="fs-s">${h.time}</td></tr>`;
+  }).join('');
+  $('hp-cnt').textContent=p+' Present';$('ha-cnt').textContent=a+' Absent';
+}
+
+/* ─────────────────── NOTIFICATIONS ─────────────────── */
+function loadNotifs(){
+  const icons={ATTENDANCE:'✅',WARNING:'⚠️',INFO:'ℹ️',APPROVAL:'🔔'};
+  $('notif-list').innerHTML=D.notifs.map(n=>`
+    <div class="notif ${!n.read?'unread':''}">
+      <div style="font-size:1.4rem">${icons[n.type]||'🔔'}</div>
+      <div style="flex:1"><div class="fw-b fs-s">${n.title}${!n.read?' <span class="c-p">●</span>':''}</div>
+      <div class="fs-s mt-1">${n.msg}</div>
+      <div class="fs-xs c-m mt-1">${n.time}</div></div></div>`).join('');
+}
+
+/* ─────────────────── PROFILE ─────────────────── */
+function loadProf(){
+  $('p-img').src=user.photo;$('p-name2').textContent=user.name;
+  $('p-vstatus').textContent=user.photoApproved?'✓ Official Verified':'⏳ Pending Approval';
+  $('p-vstatus').className='badge '+(user.photoApproved?'bs':'bw')+' mt-2';
+  $('p-rows').innerHTML=[
+    ['Full Name',user.name],['AKTU Roll Number',user.roll],
+    ['Branch / Department',user.branch||user.dept],
+    ['Year / Semester',(user.year||'3rd Year')+' / '+(user.sem||'5th Sem')],
+    ['Section',user.sec||'A'],['Email',user.email||'—'],['Mobile',user.mobile||'—']
+  ].map(([k,v])=>`<div class="prow"><span class="pk">${k}</span><span class="pv">${v}</span></div>`).join('');
+}
+function reqPhoto(){
+  const u=$('p-url').value.trim();
+  if(!u){toast('Please enter a photo URL',false);return;}
+  toast('📸 Photo update requested! Pending approval.');$('p-url').value='';
+}
+
+/* ─────────────────── TEACHER ─────────────────── */
+function loadTeacher(){
+  $('t-name').textContent=user.name;$('t-dept').textContent=user.dept;
+  const subNames={'KCS-501':'Web Technology','KCS-502':'Database Mgmt Systems','KCS-503':'Design & Analysis of Algorithms','KNC-501':'Constitution of India'};
+  $('t-subs').innerHTML=(user.subjects||[]).map(c=>`
+    <div class="card card-sm"><span class="badge bp fs-xs">${c}</span><div class="fw-b fs-s mt-1">${subNames[c]||c}</div>
+    <div class="fs-xs c-m">CSE • 5th Semester</div></div>`).join('');
+}
+function createSess(){
+  const sub=$('cs-sub').value;
+  const subName=$('cs-sub').options[$('cs-sub').selectedIndex].text.split('—')[1].trim();
+  const newS={id:'SESS_NEW_'+Date.now(),code:sub,name:subName,faculty:user.name,branch:$('cs-br').value,
+    sec:$('cs-sec').value,sem:$('cs-sem').value,date:'2026-10-10',start:'Now',end:'—',radius:+$('cs-rad').value,active:true};
+  D.sessions.push(newS);D.pastSessions.unshift({...newS,present:0,total:0});
+  // Draw simple QR art on canvas
+  const cv=$('qr-canvas');const ctx=cv.getContext('2d');
+  ctx.fillStyle='#ffffff';ctx.fillRect(0,0,180,180);
+  ctx.fillStyle='#000000';
+  const blocks=[[0,0],[4,0],[0,4],[4,4],[1,1],[2,1],[3,1],[1,2],[3,2],[1,3],[2,3],[3,3],[6,6],[7,6],[8,6],[6,7],[8,7],[6,8],[7,8],[8,8],[3,5],[5,3],[7,2],[2,7]];
+  blocks.forEach(([x,y])=>ctx.fillRect(x*20,y*20,18,18));
+  ctx.font='bold 8px monospace';ctx.fillStyle='#4F46E5';ctx.fillText(sub,4,175);
+  $('cs-ok').classList.remove('hide');toast('🚀 Session started: '+sub);
+}
+function loadRoster(){
+  rosterFull=[...D.roster];$('r-subj').textContent='KCS-501 — Web Technology';renderRoster(rosterFull);
+}
+function renderRoster(list){
+  let p=0,a=0;
+  $('r-body').innerHTML=list.map(r=>{
+    if(r.status==='PRESENT')p++;else a++;
+    return `<tr><td><div class="flex aic gap-s"><img class="av av36" src="${r.photo}"><span class="fw-b fs-s">${r.name}</span></div></td>
+    <td class="fs-s">${r.roll}</td><td><span class="badge ${r.status==='PRESENT'?'bs':'bd'}">${r.status}</span></td>
+    <td class="fs-s">${r.dist!=null?r.dist+'m':'—'}</td><td class="fs-s">${r.time||'—'}</td>
+    <td><button class="btn btn-sm btn-o" onclick="toggleR('${r.roll}')">Toggle</button></td></tr>`;
+  }).join('');
+  $('r-p').textContent=p;$('r-a').textContent=a;$('r-t').textContent=p+a;
+}
+function filterR(){
+  const q=$('r-search').value.toLowerCase();
+  renderRoster(rosterFull.filter(r=>r.name.toLowerCase().includes(q)||r.roll.includes(q)));
+}
+function toggleR(roll){
+  const r=rosterFull.find(x=>x.roll===roll);
+  if(!r)return;r.status=r.status==='PRESENT'?'ABSENT':'PRESENT';
+  if(r.status==='PRESENT'){r.dist=14.2;r.time=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});}
+  else{r.dist=null;r.time=null;}
+  renderRoster(rosterFull);toast(`${r.name} marked ${r.status}`);
+}
+function exportXls(){toast('📥 Downloading attendance_KCS501.xlsx ...');setTimeout(()=>toast('✅ Excel exported!'),800);}
+function exportPdf(){toast('📄 Downloading attendance_KCS501.pdf ...');setTimeout(()=>toast('✅ PDF exported!'),800);}
+function closeSess(){if(confirm('Close this attendance session?')){D.sessions[0].active=false;toast('🔴 Session closed.');tTab('dash');}}
+function loadTSess(){renderTSess(D.pastSessions);}
+function filtSess(f){
+  sessFilter=f;const filt=f==='ALL'?D.pastSessions:f==='ACTIVE'?D.pastSessions.filter(s=>s.active):D.pastSessions.filter(s=>!s.active);
+  renderTSess(filt);
+}
+function renderTSess(list){
+  $('t-sess-list').innerHTML=list.map(s=>`
+    <div class="card card-sm mb-2">
+      <div class="flex jb aic"><div><span class="badge bp fs-xs">${s.code}</span> <span class="fw-b">${s.name}</span>
+      <div class="fs-xs c-m">${s.branch}/${s.sec} · ${s.date} · ${s.start}</div></div>
+      <div class="tc"><span class="badge ${s.active?'bs':'bd'}">${s.active?'● LIVE':'⏸ CLOSED'}</span>
+      <div class="fw-8 mt-1">${s.present}</div><div class="fs-xs c-m">present</div></div></div>
+      <div class="flex gap-s mt-2">
+        <button class="btn btn-sm btn-o" onclick="tTab('roster')">📡 Roster</button>
+        <button class="btn btn-sm btn-s" onclick="exportXls()">📥 Excel</button>
+        ${s.active?`<button class="btn btn-sm btn-d" onclick="closeSess()">🔴 Close</button>`:''}
+      </div></div>`).join('')||'<div class="card tc c-m">No sessions found.</div>';
+}
+
+/* ─────────────────── ADMIN ─────────────────── */
+function loadAdmin(){
+  const s=D.adminStats;
+  $('a-stats').innerHTML=[
+    {n:s.students,l:'Total Students',c:'var(--primary)'},{n:s.teachers,l:'Faculty Members',c:'var(--success)'},
+    {n:s.defaulters,l:'Defaulters <75%',c:'var(--danger)'},{n:s.sessions,l:'Sessions This Month',c:'var(--warn)'}
+  ].map(x=>`<div class="card stat"><div class="n" style="color:${x.c}">${x.n}</div><div class="l">${x.l}</div></div>`).join('');
+
+  $('a-branches').innerHTML=D.branches.map(b=>`
+    <div class="mb-2"><div class="flex jb fs-s"><span class="fw-b">${b.name}</span><span style="color:${b.pct<75?'var(--danger)':'var(--success)'}">${b.pct}%</span></div>
+    <div class="pbar"><div class="pfill" style="width:${b.pct}%;background:${b.pct<75?'var(--danger)':'var(--success)'}"></div></div>
+    <div class="fs-xs c-m">${b.students} students</div></div>`).join('');
+
+  $('a-sessions').innerHTML=D.pastSessions.slice(0,3).map(s=>`
+    <div class="flex jb aic mb-2 card card-sm"><div><span class="badge bp fs-xs">${s.code}</span> <span class="fw-b fs-s">${s.name}</span>
+    <div class="fs-xs c-m">${s.date}</div></div>
+    <span class="badge ${s.active?'bs':'bd'}">${s.active?'LIVE':'CLOSED'}</span></div>`).join('');
+
+  $('a-def-body').innerHTML=D.defaulters.map(d=>`
+    <tr><td class="fw-b">${d.roll}</td><td>${d.name}</td><td>${d.branch}</td><td>${d.sec}</td>
+    <td><span class="badge bd">${d.pct}%</span></td></tr>`).join('');
+
+  $('a-photo-list').innerHTML=D.pendingPhotos.map(p=>`
+    <div class="card tc" id="ph-${p.roll}"><img class="av av80" src="${p.img}" style="display:block;margin:0 auto 10px">
+    <div class="fw-b fs-s">${p.name}</div><div class="fs-xs c-m mb-3">${p.roll}</div>
+    <div class="flex jc gap-s"><button class="btn btn-s btn-sm" onclick="appPhoto('${p.roll}',true)">✅ Approve</button>
+    <button class="btn btn-d btn-sm" onclick="appPhoto('${p.roll}',false)">❌ Reject</button></div></div>`).join('')
+    ||'<div class="card tc c-m" style="grid-column:1/-1">✅ No pending approvals.</div>';
+
+  $('a-log-body').innerHTML=D.auditLogs.map(l=>`
+    <tr><td class="fw-b fs-s c-p">${l.action}</td><td class="fw-b fs-s">${l.user}</td>
+    <td><span class="badge ${l.role==='ADMIN'?'bp':l.role==='TEACHER'?'bs':'bw'}">${l.role}</span></td>
+    <td class="fs-xs">${l.detail}</td><td class="fs-xs c-m">${l.time}</td></tr>`).join('');
+}
+function appPhoto(roll,ok){
+  $('ph-'+roll)?.remove();
+  D.pendingPhotos=D.pendingPhotos.filter(p=>p.roll!==roll);
+  toast(ok?'✅ Photo approved and activated!':'❌ Photo rejected.');
+  D.adminStats.pendingPhotos=Math.max(0,D.adminStats.pendingPhotos-1);
+}
+/* ─────────────────── mark identity fields ─────────────────── */
+function setMarkIdentity(){
+  $('mk-photo').src=user.photo;$('mk-name').textContent=user.name;$('mk-roll2').textContent='AKTU Roll: '+user.roll;
+}
+
+/* ─────────────────── BOOT ─────────────────── */
+window.onload=function(){
+  // Check remembered session
+  try{
+    const saved=localStorage.getItem('sa_user');
+    if(saved){const {id,role:r}=JSON.parse(saved);const u=D.users[id];if(u&&u.role===r){user=u;role=r;showApp();return;}}
+  }catch(e){}
+  // Default: show login
+};
+// Set identity for mark screen when it becomes visible
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('[onclick*="sTab"]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      if(user&&role==='STUDENT')setTimeout(()=>setMarkIdentity&&setMarkIdentity(),50);
+    });
+  });
+});
+</script>
+</body>
+</html>

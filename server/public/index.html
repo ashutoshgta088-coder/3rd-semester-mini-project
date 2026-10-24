@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>stuatten — Smart Biometric Attendance System</title>
+<style>
+:root {
+  --bg:#F8FAFC;--card:#FFFFFF;--text:#0F172A;--muted:#64748B;--border:#E2E8F0;
+  --primary:#4F46E5;--primary-h:#4338CA;--success:#10B981;--danger:#EF4444;--warn:#F59E0B;
+  --header-bg:linear-gradient(135deg,#4F46E5,#3730A3);
+}
+[data-theme="dark"]{
+  --bg:#0F172A;--card:#1E293B;--text:#F8FAFC;--muted:#94A3B8;--border:#334155;
+  --header-bg:linear-gradient(135deg,#1E1B4B,#312E81);
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif;}
+body{background:var(--bg);color:var(--text);min-height:100vh;transition:background .2s,color .2s;}
+a{color:var(--primary);text-decoration:none;}
+.hide{display:none!important;}
+
+/* Layout */
+.header{background:var(--header-bg);color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;}
+.header h1{font-size:1.25rem;font-weight:800;}
+.header .sub{font-size:.75rem;opacity:.8;margin-top:2px;}
+.main{max-width:960px;margin:0 auto;padding:20px;}
+.footer{text-align:center;padding:16px;color:var(--muted);font-size:.8rem;border-top:1px solid var(--border);margin-top:40px;}
+
+/* Card */
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+
+/* Button */
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 18px;border:none;border-radius:8px;font-weight:600;font-size:.875rem;cursor:pointer;transition:all .15s;}
+.btn-p{background:var(--primary);color:#fff;}.btn-p:hover{background:var(--primary-h);}
+.btn-s{background:var(--success);color:#fff;}
+.btn-d{background:var(--danger);color:#fff;}
+.btn-o{background:transparent;border:1.5px solid var(--primary);color:var(--primary);}
+.btn-sm{padding:6px 12px;font-size:.75rem;border-radius:6px;}
+.btn-w{width:100%;}
+.btn-g{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-size:.8rem;padding:6px 14px;border-radius:16px;}
+
+/* Input */
+.inp{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:.9rem;}
+.inp:focus{outline:2px solid var(--primary);outline-offset:-1px;}
+.lbl{display:block;font-size:.8rem;color:var(--muted);font-weight:600;margin-bottom:4px;}
+.fg{margin-bottom:14px;}
+
+/* Tabs */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;overflow-x:auto;}
+.tab{padding:10px 18px;font-size:.85rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;transition:all .15s;}
+.tab.on{color:var(--primary);border-bottom-color:var(--primary);}
+.tab:hover{color:var(--primary);}
+
+/* Badge */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700;}
+.bg-s{background:rgba(16,185,129,.12);color:var(--success);}
+.bg-d{background:rgba(239,68,68,.12);color:var(--danger);}
+.bg-w{background:rgba(245,158,11,.12);color:var(--warn);}
+.bg-p{background:rgba(79,70,229,.12);color:var(--primary);}
+
+/* Table */
+table{width:100%;border-collapse:collapse;}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);font-size:.85rem;}
+th{color:var(--muted);font-weight:500;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;}
+
+/* Grid */
+.grid{display:grid;gap:12px;}
+.g2{grid-template-columns:repeat(2,1fr);}
+.g3{grid-template-columns:repeat(3,1fr);}
+.g4{grid-template-columns:repeat(4,1fr);}
+@media(max-width:700px){.g2,.g3,.g4{grid-template-columns:1fr;}}
+
+/* Flex */
+.flex{display:flex;}.fc{flex-direction:column;}.fw{flex-wrap:wrap;}
+.aic{align-items:center;}.jb{justify-content:space-between;}.jc{justify-content:center;}
+.gap{gap:12px;}.gap-s{gap:6px;}
+
+/* Progress */
+.pbar{height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.pfill{height:100%;border-radius:4px;transition:width .3s;}
+
+/* Avatar */
+.avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.3);}
+.avatar-sm{width:36px;height:36px;border-radius:50%;object-fit:cover;}
+.avatar-lg{width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--primary);}
+
+/* Toast */
+#toast{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;}
+.toast-item{padding:12px 20px;border-radius:10px;color:#fff;font-size:.85rem;font-weight:600;animation:slideIn .3s;min-width:220px;}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* Stat card */
+.stat{text-align:center;padding:18px 10px;}
+.stat .num{font-size:1.6rem;font-weight:800;}
+.stat .lbl2{font-size:.7rem;color:var(--muted);margin-top:4px;}
+
+/* Step circle */
+.steps{display:flex;gap:0;justify-content:center;margin-bottom:24px;}
+.step-c{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#fff;background:var(--border);transition:background .2s;}
+.step-c.on{background:var(--primary);}
+.step-c.done{background:var(--success);}
+.step-line{width:40px;height:2px;background:var(--border);align-self:center;}
+
+/* Login page center */
+.login-wrap{max-width:420px;margin:60px auto;padding:0 16px;}
+.logo{font-size:2.2rem;font-weight:800;color:var(--primary);letter-spacing:-.5px;}
+
+/* Misc */
+.tc{text-align:center;}.tr{text-align:right;}
+.fs-s{font-size:.8rem;}.fs-xs{font-size:.7rem;}
+.fw-b{font-weight:700;}.fw-8{font-weight:800;}
+.c-m{color:var(--muted);}.c-p{color:var(--primary);}.c-s{color:var(--success);}.c-d{color:var(--danger);}.c-w{color:var(--warn);}
+.mb-1{margin-bottom:6px;}.mb-2{margin-bottom:12px;}.mb-3{margin-bottom:20px;}.mt-2{margin-top:12px;}.mt-3{margin-top:20px;}
+.border-l{border-left:4px solid var(--primary);padding-left:12px;}
+.pill{display:inline-block;padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:600;}
+.loading{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- HEADER (hidden on login) -->
+<div id="hdr" class="header hide">
+  <div>
+    <h1>🎓 stuatten</h1>
+    <div class="sub" id="hdr-info"></div>
+  </div>
+  <div class="flex aic gap">
+    <button class="btn-g" id="theme-btn" onclick="toggleTheme()">🌙 Dark</button>
+    <button class="btn-g" onclick="doLogout()">Logout</button>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main" id="app">
+
+<!-- ═══════════════ LOGIN ═══════════════ -->
+<div id="v-login" class="login-wrap">
+  <div class="tc mb-3">
+    <div class="logo">stuatten</div>
+    <div class="fs-s c-m">Smart Biometric Attendance System (AKTU Compatible)</div>
+  </div>
+  <div class="card">
+    <div class="tabs mb-2" id="login-tabs">
+      <div class="tab on" onclick="setRole('STUDENT',this)">Student</div>
+      <div class="tab" onclick="setRole('TEACHER',this)">Teacher</div>
+      <div class="tab" onclick="setRole('ADMIN',this)">Admin</div>
+    </div>
+    <div style="background:rgba(79,70,229,.06);padding:10px 14px;border-radius:8px;margin-bottom:16px;" id="demo-box">
+      <div class="fs-xs fw-b c-p mb-1">Quick Demo Login:</div>
+      <button class="btn btn-sm btn-o" onclick="fillDemo('STUDENT')">Student</button>
+      <button class="btn btn-sm btn-o" onclick="fillDemo('TEACHER')">Teacher</button>
+      <button class="btn btn-sm btn-o" onclick="fillDemo('ADMIN')">Admin</button>
+    </div>
+    <div class="fg"><label class="lbl" id="lbl-id">AKTU Roll Number</label><input class="inp" id="f-id" placeholder="e.g. 2100270100001"></div>
+    <div class="fg"><label class="lbl">Password</label><input class="inp" id="f-pw" type="password" placeholder="••••••••"></div>
+    <div id="login-err" class="hide fs-s c-d mb-2"></div>
+    <button class="btn btn-p btn-w" id="login-btn" onclick="doLogin()">Secure Login →</button>
+    <div class="tc fs-xs c-m mt-2">Protected by Geofence & Device Lock Security</div>
+  </div>
+</div>
+
+<!-- ═══════════════ STUDENT VIEW ═══════════════ -->
+<div id="v-student" class="hide">
+  <div class="tabs" id="s-tabs">
+    <div class="tab on" onclick="sTab('dash',this)">Dashboard</div>
+    <div class="tab" onclick="sTab('mark',this)">Mark Attendance</div>
+    <div class="tab" onclick="sTab('hist',this)">History</div>
+    <div class="tab" onclick="sTab('notif',this)">Notifications <span id="notif-count" class="badge bg-d" style="margin-left:4px;display:none;"></span></div>
+    <div class="tab" onclick="sTab('prof',this)">Profile</div>
+  </div>
+
+  <!-- Student Dashboard -->
+  <div id="s-dash">
+    <div class="card flex aic gap">
+      <img class="avatar" id="s-avatar" src="">
+      <div style="flex:1">
+        <div class="fw-8" style="font-size:1.1rem" id="s-name"></div>
+        <div class="fs-s c-m" id="s-roll"></div>
+        <div class="fs-xs c-m" id="s-branch"></div>
+      </div>
+      <div class="tc">
+        <div class="fs-xs c-m">Overall</div>
+        <div class="fw-8" style="font-size:2rem" id="s-pct"></div>
+        <div id="s-def" class="badge bg-d hide">⚠️ DEFAULTER</div>
+      </div>
+    </div>
+    <div class="grid g2 mb-3">
+      <div class="card tc" style="cursor:pointer" onclick="sTab('mark')"><div style="font-size:1.5rem">📍</div><div class="fw-b fs-s">Mark Attendance</div><div class="fs-xs c-m">50m Geofence</div></div>
+      <div class="card tc" style="cursor:pointer" onclick="sTab('hist')"><div style="font-size:1.5rem">📊</div><div class="fw-b fs-s">History</div><div class="fs-xs c-m">All records</div></div>
+    </div>
+    <div class="fw-b mb-2">Subject-wise Attendance</div>
+    <div id="s-subjects"></div>
+  </div>
+
+  <!-- Mark Attendance -->
+  <div id="s-mark" class="hide">
+    <div class="steps" id="mark-steps"></div>
+    <div id="mark-s1">
+      <div class="card"><div class="fw-b mb-2">Step 1: Select Active Session</div><div class="fs-s c-m mb-3">Choose a live session created by your faculty.</div><div id="sess-list"></div></div>
+    </div>
+    <div id="mark-s2" class="hide">
+      <div class="card tc"><div class="fw-b mb-2">Step 2: GPS Location Check</div><div style="font-size:3rem;margin:16px 0">📍</div><div class="fw-8 c-s" style="font-size:1.4rem">14.2 Meters Away</div><div class="fs-s c-m mt-2">✅ Within allowed 50m classroom radius</div><button class="btn btn-p btn-w mt-3" onclick="markStep(3)">Next: Biometric →</button></div>
+    </div>
+    <div id="mark-s3" class="hide">
+      <div class="card tc"><div class="fw-b mb-2">Step 3: Biometric Authentication</div><div style="font-size:4rem;margin:16px 0;cursor:pointer" onclick="markStep(4)">👆</div><div class="fw-b">Touch Fingerprint Sensor</div><button class="btn btn-p btn-w mt-3" onclick="markStep(4)">Verify Fingerprint / Face</button></div>
+    </div>
+    <div id="mark-s4" class="hide">
+      <div class="card tc"><div class="fw-b mb-2">Step 4: Identity Confirmation</div><img class="avatar-lg" id="mk-photo" style="margin:12px auto;display:block"><div class="fw-b" id="mk-name"></div><div class="fs-s c-m" id="mk-roll"></div><div class="fs-xs c-s mt-2">✓ Official Approved Photo</div><button class="btn btn-s btn-w mt-3" onclick="submitAttendance()">Submit Attendance ✓</button></div>
+    </div>
+    <div id="mark-s5" class="hide">
+      <div class="card tc" style="padding:40px 20px"><div style="font-size:4rem" id="mk-emoji">🎉</div><div class="fw-8" style="font-size:1.3rem;margin-top:12px" id="mk-result-title"></div><div class="fs-s c-m mt-2" id="mk-result-msg"></div><button class="btn btn-p mt-3" onclick="sTab('dash')">Back to Dashboard</button></div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div id="s-hist" class="hide">
+    <div class="card">
+      <div class="flex jb aic mb-2">
+        <div class="fw-b">Attendance History</div>
+        <div class="flex gap-s">
+          <span class="pill bg-s" id="h-pres">0 Present</span>
+          <span class="pill bg-d" id="h-abs">0 Absent</span>
+        </div>
+      </div>
+      <table><thead><tr><th>Date</th><th>Subject</th><th>Status</th><th>Time</th></tr></thead><tbody id="hist-body"></tbody></table>
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div id="s-notif" class="hide"><div id="notif-list"></div></div>
+
+  <!-- Profile -->
+  <div id="s-prof" class="hide">
+    <div class="card" style="max-width:480px;margin:0 auto">
+      <div class="tc mb-3"><img class="avatar-lg" id="p-photo"><div class="badge bg-s mt-2" id="p-status">✓ Verified</div></div>
+      <div class="fw-b mb-2 c-p">AKTU Academic Credentials</div>
+      <div id="p-info"></div>
+      <hr style="border-color:var(--border);margin:16px 0">
+      <div class="fw-b mb-1">Update Profile Photo</div>
+      <div class="fs-xs c-m mb-2">Requires teacher/admin approval before use.</div>
+      <div class="flex gap-s"><input class="inp" id="photo-url" placeholder="Paste image URL..."><button class="btn btn-p btn-sm" onclick="reqPhoto()">Submit</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ TEACHER VIEW ═══════════════ -->
+<div id="v-teacher" class="hide">
+  <div class="tabs" id="t-tabs">
+    <div class="tab on" onclick="tTab('dash',this)">Dashboard</div>
+    <div class="tab" onclick="tTab('create',this)">Create Session</div>
+    <div class="tab" onclick="tTab('roster',this)">Live Roster</div>
+    <div class="tab" onclick="tTab('thist',this)">Session History</div>
+  </div>
+
+  <!-- Teacher Dashboard -->
+  <div id="t-dash">
+    <div class="card"><div class="fs-xs c-m">Faculty Portal</div><div class="fw-8" style="font-size:1.2rem" id="t-name"></div><div class="fs-s c-m" id="t-dept"></div></div>
+    <div class="flex gap mb-3">
+      <button class="btn btn-p" style="flex:1" onclick="tTab('create')">➕ Create Attendance Session</button>
+      <button class="btn btn-o" style="flex:1" onclick="tTab('roster')">📡 Live Roster</button>
+    </div>
+    <div class="fw-b mb-2">Assigned AKTU Subjects</div>
+    <div id="t-subjects"></div>
+  </div>
+
+  <!-- Create Session -->
+  <div id="t-create" class="hide">
+    <div class="card" style="max-width:520px;margin:0 auto">
+      <div class="fw-b mb-3" style="font-size:1.1rem">Create New Attendance Session</div>
+      <div class="fg"><label class="lbl">Subject</label><select class="inp" id="cs-subj"></select></div>
+      <div class="grid g2">
+        <div class="fg"><label class="lbl">Branch</label><input class="inp" id="cs-branch" value="CSE"></div>
+        <div class="fg"><label class="lbl">Section</label><input class="inp" id="cs-sec" value="A"></div>
+      </div>
+      <div class="fg"><label class="lbl">Semester</label><input class="inp" id="cs-sem" value="5th Sem"></div>
+      <div class="fg"><label class="lbl">Allowed Radius: <span id="cs-rad-val">50</span>m</label><input type="range" id="cs-rad" min="10" max="200" value="50" style="width:100%" oninput="document.getElementById('cs-rad-val').textContent=this.value"></div>
+      <div class="fg"><label class="lbl">Duration (minutes)</label><input class="inp" type="number" id="cs-dur" value="50"></div>
+      <div class="card" style="background:rgba(79,70,229,.05);text-align:center"><div class="fs-s">📍 Using Current GPS Location</div><div class="fs-xs c-m">28.6139° N, 77.2090° E</div></div>
+      <button class="btn btn-p btn-w mt-2" onclick="createSession()">Start Session</button>
+      <div id="cs-result" class="hide mt-3 tc">
+        <div class="fw-b c-s mb-2">✅ Session Created!</div>
+        <img id="cs-qr" style="width:180px;height:180px;border-radius:10px;background:#fff;padding:8px;border:1px solid var(--border)">
+        <div class="fs-xs c-m mt-2">Students can now mark attendance.</div>
+        <button class="btn btn-o btn-sm mt-2" onclick="tTab('roster')">View Live Roster →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Roster -->
+  <div id="t-roster" class="hide">
+    <div class="flex jb aic mb-2 fw" style="gap:8px">
+      <div><div class="fw-b" style="font-size:1.1rem">Live Roster: <span class="c-p" id="r-subj"></span></div><div class="fs-xs c-m" id="r-sess-id"></div></div>
+      <div class="flex gap-s">
+        <button class="btn btn-s btn-sm" onclick="exportExcel()">📥 Excel</button>
+        <button class="btn btn-d btn-sm" onclick="closeSession()">🔴 Close</button>
+      </div>
+    </div>
+    <div class="grid g3 mb-3">
+      <div class="card stat"><div class="num c-s" id="r-pres">0</div><div class="lbl2">Present</div></div>
+      <div class="card stat"><div class="num c-d" id="r-abs">0</div><div class="lbl2">Absent</div></div>
+      <div class="card stat"><div class="num" id="r-tot">0</div><div class="lbl2">Total</div></div>
+    </div>
+    <input class="inp mb-2" id="r-search" placeholder="🔍 Search by name or roll number..." oninput="filterRoster()">
+    <div class="card" style="padding:0;overflow-x:auto">
+      <table><thead><tr><th>Student</th><th>Roll No</th><th>Status</th><th>Distance</th><th>Action</th></tr></thead><tbody id="r-body"></tbody></table>
+    </div>
+  </div>
+
+  <!-- Session History -->
+  <div id="t-thist" class="hide">
+    <div class="fw-b mb-2">Session History</div>
+    <div class="flex gap-s mb-3">
+      <button class="btn btn-sm btn-p" onclick="filterSess('ALL')">All</button>
+      <button class="btn btn-sm btn-o" onclick="filterSess('ACTIVE')">🟢 Active</button>
+      <button class="btn btn-sm btn-o" onclick="filterSess('CLOSED')">🔴 Closed</button>
+    </div>
+    <div id="t-sess-list"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ ADMIN VIEW ═══════════════ -->
+<div id="v-admin" class="hide">
+  <div class="tabs" id="a-tabs">
+    <div class="tab on" onclick="aTab('analytics',this)">Analytics</div>
+    <div class="tab" onclick="aTab('defaulters',this)">Defaulters</div>
+    <div class="tab" onclick="aTab('photos',this)">Photo Approvals</div>
+    <div class="tab" onclick="aTab('audit',this)">Audit Logs</div>
+  </div>
+
+  <div id="a-analytics">
+    <div class="grid g4 mb-3" id="a-stats"></div>
+    <div class="fw-b mb-2">Department Overview</div>
+    <div id="a-depts" class="grid g2"></div>
+  </div>
+  <div id="a-defaulters" class="hide">
+    <div class="fw-b c-d mb-2">Defaulter Students (&lt; 75% Attendance)</div>
+    <div class="card" style="padding:0;overflow-x:auto"><table><thead><tr><th>Roll Number</th><th>Name</th><th>Branch</th><th>Section</th><th>Attendance</th></tr></thead><tbody id="a-def-body"></tbody></table></div>
+  </div>
+  <div id="a-photos" class="hide">
+    <div class="fw-b mb-2">Pending Photo Approvals</div>
+    <div id="a-photo-list" class="grid g3"></div>
+  </div>
+  <div id="a-audit" class="hide">
+    <div class="fw-b mb-2">Security & Attendance Audit Logs</div>
+    <div class="card" style="padding:0;overflow-x:auto"><table><thead><tr><th>Action</th><th>User</th><th>Role</th><th>Timestamp</th></tr></thead><tbody id="a-log-body"></tbody></table></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<div class="footer">© 2026 stuatten — Smart Biometric Attendance System (AKTU Compatible)</div>
+<div id="toast"></div>
+
+<script>
+/* ━━━━━━━━━━━━━━━━ STATE ━━━━━━━━━━━━━━━━ */
+let USER=null, TOKEN=null, ROLE=null, loginRole='STUDENT';
+let rosterData=[], sessFilter='ALL', selSession=null;
+
+/* ━━━━━━━━━━━━━━━━ API HELPER ━━━━━━━━━━━━━━━━ */
+async function api(path,method='GET',body=null){
+  const h={'Content-Type':'application/json'};
+  if(TOKEN)h['Authorization']='Bearer '+TOKEN;
+  try{
+    const r=await fetch('/api'+path,{method,headers:h,body:body?JSON.stringify(body):null});
+    const d=await r.json();
+    if(r.status===401||r.status===403){doLogout();return null;}
+    return d;
+  }catch(e){console.warn('API fail:',path,e);return null;}
+}
+
+function toast(msg,ok=true){
+  const el=document.createElement('div');
+  el.className='toast-item';el.style.background=ok?'var(--success)':'var(--danger)';
+  el.textContent=msg;document.getElementById('toast').appendChild(el);
+  setTimeout(()=>el.remove(),3000);
+}
+
+/* ━━━━━━━━━━━━━━━━ THEME ━━━━━━━━━━━━━━━━ */
+let dark=false;
+function toggleTheme(){
+  dark=!dark;
+  document.documentElement.setAttribute('data-theme',dark?'dark':'');
+  document.getElementById('theme-btn').textContent=dark?'☀️ Light':'🌙 Dark';
+}
+
+/* ━━━━━━━━━━━━━━━━ LOGIN ━━━━━━━━━━━━━━━━ */
+function setRole(r,el){
+  loginRole=r;
+  document.querySelectorAll('#login-tabs .tab').forEach(t=>t.classList.remove('on'));
+  if(el)el.classList.add('on');
+  const labels={STUDENT:'AKTU Roll Number',TEACHER:'Faculty ID',ADMIN:'Admin Username'};
+  document.getElementById('lbl-id').textContent=labels[r];
+  document.getElementById('login-err').classList.add('hide');
+}
+
+function fillDemo(r){
+  setRole(r,document.querySelector('#login-tabs .tab[onclick*="'+r+'"]'));
+  const c={STUDENT:['2100270100001','studentpassword'],TEACHER:['T1001','teacherpassword'],ADMIN:['admin','adminpassword123']};
+  document.getElementById('f-id').value=c[r][0];
+  document.getElementById('f-pw').value=c[r][1];
+}
+
+async function doLogin(){
+  const id=document.getElementById('f-id').value.trim();
+  const pw=document.getElementById('f-pw').value;
+  if(!id||!pw){showErr('Please enter both fields.');return;}
+  const btn=document.getElementById('login-btn');
+  btn.innerHTML='<span class="loading"></span>';btn.disabled=true;
+  const res=await api('/auth/login','POST',{identifier:id,password:pw,role:loginRole});
+  btn.textContent='Secure Login →';btn.disabled=false;
+  if(!res||!res.success){showErr(res?.message||'Login failed. Check your credentials.');return;}
+  TOKEN=res.token;USER=res.user;ROLE=USER.role;
+  localStorage.setItem('stuatten_token',TOKEN);
+  localStorage.setItem('stuatten_user',JSON.stringify(USER));
+  showApp();
+}
+function showErr(m){const el=document.getElementById('login-err');el.textContent='⚠️ '+m;el.classList.remove('hide');}
+
+function doLogout(){
+  TOKEN=null;USER=null;ROLE=null;
+  localStorage.removeItem('stuatten_token');localStorage.removeItem('stuatten_user');
+  document.getElementById('hdr').classList.add('hide');
+  ['v-student','v-teacher','v-admin'].forEach(v=>document.getElementById(v).classList.add('hide'));
+  document.getElementById('v-login').classList.remove('hide');
+  document.getElementById('f-id').value='';document.getElementById('f-pw').value='';
+  document.getElementById('login-err').classList.add('hide');
+}
+
+/* ━━━━━━━━━━━━━━━━ SHOW APP ━━━━━━━━━━━━━━━━ */
+async function showApp(){
+  document.getElementById('v-login').classList.add('hide');
+  document.getElementById('hdr').classList.remove('hide');
+  const info=ROLE==='STUDENT'?USER.name+' | '+USER.identifier:ROLE==='TEACHER'?USER.name+' | '+USER.department:USER.name;
+  document.getElementById('hdr-info').textContent=ROLE.charAt(0)+ROLE.slice(1).toLowerCase()+' — '+info;
+
+  if(ROLE==='STUDENT'){document.getElementById('v-student').classList.remove('hide');await loadStudent();}
+  else if(ROLE==='TEACHER'){document.getElementById('v-teacher').classList.remove('hide');await loadTeacher();}
+  else if(ROLE==='ADMIN'){document.getElementById('v-admin').classList.remove('hide');await loadAdmin();}
+}
+
+/* ━━━━━━━━━━━━━━━━ TAB SWITCHING ━━━━━━━━━━━━━━━━ */
+function sTab(t,el){
+  ['s-dash','s-mark','s-hist','s-notif','s-prof'].forEach(id=>document.getElementById(id).classList.add('hide'));
+  document.getElementById('s-'+t).classList.remove('hide');
+  document.querySelectorAll('#s-tabs .tab').forEach(x=>x.classList.remove('on'));
+  if(el)el.classList.add('on');
+  if(t==='mark')loadSessions();if(t==='hist')loadHistory();if(t==='notif')loadNotifs();if(t==='prof')loadProfile();
+}
+function tTab(t,el){
+  ['t-dash','t-create','t-roster','t-thist'].forEach(id=>document.getElementById(id).classList.add('hide'));
+  document.getElementById('t-'+t).classList.remove('hide');
+  document.querySelectorAll('#t-tabs .tab').forEach(x=>x.classList.remove('on'));
+  if(el)el.classList.add('on');
+  if(t==='roster')loadRoster();if(t==='thist')loadTeacherSessions();
+}
+function aTab(t,el){
+  ['a-analytics','a-defaulters','a-photos','a-audit'].forEach(id=>document.getElementById(id).classList.add('hide'));
+  document.getElementById('a-'+t).classList.remove('hide');
+  document.querySelectorAll('#a-tabs .tab').forEach(x=>x.classList.remove('on'));
+  if(el)el.classList.add('on');
+}
+
+/* ━━━━━━━━━━━━━━━━ STUDENT ━━━━━━━━━━━━━━━━ */
+async function loadStudent(){
+  const d=await api('/student/overview');
+  if(!d||!d.success)return;
+  const pu=USER.profilePhotoUrl||'https://ui-avatars.com/api/?name='+encodeURIComponent(USER.name)+'&background=4F46E5&color=fff';
+  document.getElementById('s-avatar').src=pu;
+  document.getElementById('s-name').textContent=d.fullName||USER.name;
+  document.getElementById('s-roll').textContent='AKTU Roll: '+(d.rollNumber||USER.identifier);
+  document.getElementById('s-branch').textContent=(USER.branch||'CSE')+' • '+(USER.semester||'5th Sem')+' • Sec '+(USER.section||'A');
+  const pct=d.overallPercentage||0;
+  const pEl=document.getElementById('s-pct');
+  pEl.textContent=pct+'%';pEl.style.color=pct<75?'var(--danger)':'var(--success)';
+  if(d.isDefaulter)document.getElementById('s-def').classList.remove('hide');else document.getElementById('s-def').classList.add('hide');
+
+  // Subjects
+  let html='';
+  (d.subjectStats||[]).forEach(s=>{
+    const color=s.percentage<75?'var(--danger)':'var(--success)';
+    html+=`<div class="card" style="padding:14px">
+      <div class="flex jb aic"><div><div class="fs-xs fw-b c-p">${s.subjectCode}</div><div class="fw-b fs-s">${s.subjectName}</div></div>
+      <div class="fw-8" style="font-size:1.2rem;color:${color}">${s.percentage}%</div></div>
+      <div class="pbar mt-2"><div class="pfill" style="width:${s.percentage}%;background:${color}"></div></div>
+      <div class="fs-xs c-m mt-1">Attended ${s.attended} of ${s.totalLectures} lectures</div></div>`;
+  });
+  document.getElementById('s-subjects').innerHTML=html;
+
+  // Pre-fill mark attendance identity
+  document.getElementById('mk-photo').src=pu;
+  document.getElementById('mk-name').textContent=USER.name;
+  document.getElementById('mk-roll').textContent='AKTU Roll: '+USER.identifier;
+}
+
+async function loadSessions(){
+  const d=await api('/attendance/active-sessions');
+  const list=document.getElementById('sess-list');
+  if(!d||!d.success||!d.sessions||d.sessions.length===0){
+    list.innerHTML='<div class="tc" style="padding:30px"><div style="font-size:2rem">📭</div><div class="c-m fs-s mt-2">No active sessions right now.</div></div>';
+    return;
+  }
+  list.innerHTML=d.sessions.map(s=>`
+    <div class="card flex jb aic" style="cursor:pointer;border-color:var(--primary);padding:14px" onclick="pickSession('${s.sessionId}','${s.qrCodeToken}','${s.subjectCode}','${s.subjectName}')">
+      <div><div class="fs-xs fw-b c-p">${s.subjectCode}</div><div class="fw-b">${s.subjectName}</div>
+      <div class="fs-xs c-m">Faculty: ${s.facultyName} • ${s.allowedRadiusMeters}m radius</div></div>
+      <span class="badge bg-s">● LIVE</span>
+    </div>`).join('');
+  // Reset stepper
+  [2,3,4,5].forEach(i=>document.getElementById('mark-s'+i).classList.add('hide'));
+  document.getElementById('mark-s1').classList.remove('hide');
+  renderSteps(1);
+}
+
+function renderSteps(cur){
+  let h='';
+  for(let i=1;i<=5;i++){
+    if(i>1)h+='<div class="step-line"></div>';
+    h+=`<div class="step-c ${i<cur?'done':i===cur?'on':''}">${i}</div>`;
+  }
+  document.getElementById('mark-steps').innerHTML=h;
+}
+
+function pickSession(id,qr,code,name){
+  selSession={sessionId:id,qrCodeToken:qr,subjectCode:code,subjectName:name};
+  markStep(2);
+}
+function markStep(n){
+  [1,2,3,4,5].forEach(i=>document.getElementById('mark-s'+i).classList.add('hide'));
+  document.getElementById('mark-s'+n).classList.remove('hide');
+  renderSteps(n);
+}
+
+async function submitAttendance(){
+  if(!selSession)return;
+  const res=await api('/attendance/mark','POST',{
+    sessionId:selSession.sessionId,qrCodeToken:selSession.qrCodeToken,
+    location:{latitude:28.6139,longitude:77.2090},biometricVerified:true,deviceId:'WEB_BROWSER'
+  });
+  if(res&&res.success){
+    document.getElementById('mk-emoji').textContent='🎉';
+    document.getElementById('mk-result-title').textContent='ATTENDANCE MARKED!';
+    document.getElementById('mk-result-title').style.color='var(--success)';
+    document.getElementById('mk-result-msg').textContent=res.message;
+  }else{
+    document.getElementById('mk-emoji').textContent='❌';
+    document.getElementById('mk-result-title').textContent='FAILED';
+    document.getElementById('mk-result-title').style.color='var(--danger)';
+    document.getElementById('mk-result-msg').textContent=res?.message||'Could not mark attendance.';
+  }
+  markStep(5);
+}
+
+async function loadHistory(){
+  const d=await api('/student/history?limit=50');
+  if(!d)return;
+  const hist=d.history||[];
+  let p=0,a=0;
+  document.getElementById('hist-body').innerHTML=hist.map(h=>{
+    if(h.status==='PRESENT'||h.status==='MANUAL')p++;else a++;
+    const badge=h.status==='PRESENT'?'bg-s':h.status==='ABSENT'?'bg-d':'bg-w';
+    const time=h.markedAt?new Date(h.markedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'—';
+    return `<tr><td>${h.date||'—'}</td><td><span class="fw-b c-p">${h.subjectCode}</span><br><span class="fs-xs c-m">${h.subjectName||''}</span></td><td><span class="badge ${badge}">${h.status}</span></td><td class="fs-s">${time}</td></tr>`;
+  }).join('')||'<tr><td colspan="4" class="tc c-m">No records found.</td></tr>';
+  document.getElementById('h-pres').textContent=p+' Present';
+  document.getElementById('h-abs').textContent=a+' Absent';
+}
+
+async function loadNotifs(){
+  const d=await api('/student/notifications');
+  if(!d)return;
+  const notifs=d.notifications||[];
+  const unread=d.unreadCount||0;
+  const nc=document.getElementById('notif-count');
+  if(unread>0){nc.textContent=unread;nc.style.display='inline';}else nc.style.display='none';
+  const icons={INFO:'ℹ️',WARNING:'⚠️',ATTENDANCE:'✅',APPROVAL:'🔔'};
+  document.getElementById('notif-list').innerHTML=notifs.map(n=>{
+    const ago=timeAgo(n.createdAt);
+    return `<div class="card flex gap" style="${!n.isRead?'border-left:4px solid var(--primary)':''}">
+      <div style="font-size:1.4rem">${icons[n.type]||'🔔'}</div>
+      <div style="flex:1"><div class="fw-b fs-s">${n.title}${!n.isRead?' <span class="c-p">•</span>':''}</div>
+      <div class="fs-s">${n.message}</div><div class="fs-xs c-m mt-1">${ago}</div></div></div>`;
+  }).join('')||'<div class="card tc c-m">No notifications yet.</div>';
+}
+
+function timeAgo(d){
+  if(!d)return '';
+  const s=Math.floor((Date.now()-new Date(d))/1000);
+  if(s<60)return 'Just now';if(s<3600)return Math.floor(s/60)+'m ago';
+  if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';
+}
+
+async function loadProfile(){
+  const d=await api('/student/profile');
+  const st=d?.student||USER;
+  const pu=st.profilePhotoUrl||USER.profilePhotoUrl||'';
+  document.getElementById('p-photo').src=pu;
+  document.getElementById('p-status').textContent=st.photoApproved!==false?'✓ Official Verified Photo':'⏳ Pending Approval';
+  document.getElementById('p-status').className='badge mt-2 '+(st.photoApproved!==false?'bg-s':'bg-w');
+  const rows=[['Full Name',st.fullName||USER.name],['AKTU Roll Number',st.rollNumber||USER.identifier],
+    ['Branch',st.branch||USER.branch],['Year / Semester',(st.year||'')+' / '+(st.semester||USER.semester)],
+    ['Section',st.section||USER.section],['Email',st.email||USER.email],['Mobile',st.mobileNumber||'']];
+  document.getElementById('p-info').innerHTML=rows.map(r=>`<div class="flex jb" style="padding:8px 0;border-bottom:1px solid var(--border)"><span class="fs-s c-m">${r[0]}</span><span class="fs-s fw-b">${r[1]||'—'}</span></div>`).join('');
+}
+
+async function reqPhoto(){
+  const u=document.getElementById('photo-url').value.trim();
+  if(!u){toast('Enter a photo URL',false);return;}
+  await api('/student/photo-request','POST',{photoUrl:u});
+  toast('Photo update request sent! Pending approval.');
+  document.getElementById('photo-url').value='';
+}
+
+/* ━━━━━━━━━━━━━━━━ TEACHER ━━━━━━━━━━━━━━━━ */
+async function loadTeacher(){
+  document.getElementById('t-name').textContent=USER.name;
+  document.getElementById('t-dept').textContent='Department: '+(USER.department||'CSE');
+  const subs=USER.assignedSubjects||['KCS-501','KCS-502'];
+  const subNames={'KCS-501':'Web Technology','KCS-502':'Database Management Systems','KCS-503':'Design & Analysis of Algorithms','KNC-501':'Constitution of India'};
+  document.getElementById('t-subjects').innerHTML=subs.map(c=>`<div class="card" style="padding:14px"><div class="fs-xs fw-b c-p">${c}</div><div class="fw-b fs-s">${subNames[c]||c}</div><div class="fs-xs c-m mt-1">CSE • 5th Semester</div></div>`).join('');
+  document.getElementById('cs-subj').innerHTML=subs.map(c=>`<option value="${c}">${c} — ${subNames[c]||c}</option>`).join('');
+}
+
+async function createSession(){
+  const code=document.getElementById('cs-subj').value;
+  const subNames={'KCS-501':'Web Technology','KCS-502':'Database Management Systems','KCS-503':'Design & Analysis of Algorithms'};
+  const res=await api('/teacher/session/create','POST',{
+    subjectCode:code,subjectName:subNames[code]||code,
+    branch:document.getElementById('cs-branch').value,semester:document.getElementById('cs-sem').value,
+    section:document.getElementById('cs-sec').value,allowedRadiusMeters:parseInt(document.getElementById('cs-rad').value),
+    location:{latitude:28.6139,longitude:77.2090},durationMinutes:parseInt(document.getElementById('cs-dur').value)
+  });
+  if(res&&res.success){
+    if(res.qrDataUrl)document.getElementById('cs-qr').src=res.qrDataUrl;
+    document.getElementById('cs-result').classList.remove('hide');
+    toast('Session created!');
+  }else toast(res?.message||'Failed to create session',false);
+}
+
+let fullRoster=[];
+async function loadRoster(sessId){
+  const sid=sessId||'SESS_DEMO_KCS501';
+  const d=await api('/teacher/session/'+sid+'/roster');
+  if(!d||!d.success)return;
+  document.getElementById('r-subj').textContent=(d.session?.subjectCode||'')+' — '+(d.session?.subjectName||'');
+  document.getElementById('r-sess-id').textContent='Session: '+sid;
+  fullRoster=d.roster||[];
+  renderRoster(fullRoster);
+}
+
+function renderRoster(list){
+  let p=0,a=0;
+  document.getElementById('r-body').innerHTML=list.map(r=>{
+    if(r.status==='PRESENT'||r.status==='MANUAL')p++;else a++;
+    const badge=r.status==='PRESENT'?'bg-s':'bg-d';
+    const photo=r.profilePhotoUrl||'https://ui-avatars.com/api/?name='+encodeURIComponent(r.fullName||'S')+'&size=36&background=4F46E5&color=fff';
+    return `<tr>
+      <td><div class="flex aic gap-s"><img class="avatar-sm" src="${photo}"><span class="fw-b fs-s">${r.fullName||'—'}</span></div></td>
+      <td class="fs-s">${r.rollNumber}</td>
+      <td><span class="badge ${badge}">${r.status}</span></td>
+      <td class="fs-s">${r.distanceMeters!=null?r.distanceMeters+'m':'—'}</td>
+      <td><button class="btn btn-sm btn-o" onclick="toggleStatus('${r.rollNumber}','${r.status==='PRESENT'?'ABSENT':'PRESENT'}')">Toggle</button></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="5" class="tc c-m">No students yet.</td></tr>';
+  document.getElementById('r-pres').textContent=p;document.getElementById('r-abs').textContent=a;
+  document.getElementById('r-tot').textContent=p+a;
+}
+
+function filterRoster(){
+  const q=document.getElementById('r-search').value.toLowerCase();
+  renderRoster(fullRoster.filter(r=>(r.fullName||'').toLowerCase().includes(q)||(r.rollNumber||'').includes(q)));
+}
+
+async function toggleStatus(roll,newSt){
+  const sessId=document.getElementById('r-sess-id').textContent.replace('Session: ','');
+  await api('/teacher/session/toggle-status','POST',{sessionId:sessId,rollNumber:roll,newStatus:newSt});
+  const s=fullRoster.find(x=>x.rollNumber===roll);
+  if(s)s.status=newSt;
+  renderRoster(fullRoster);
+  toast(roll+' → '+newSt);
+}
+
+function exportExcel(){
+  const sessId=document.getElementById('r-sess-id').textContent.replace('Session: ','');
+  window.open('/api/teacher/session/'+sessId+'/export/excel','_blank');
+}
+async function closeSession(){
+  if(!confirm('Close this attendance session?'))return;
+  const sessId=document.getElementById('r-sess-id').textContent.replace('Session: ','');
+  await api('/teacher/session/'+sessId+'/close','POST',{});
+  toast('Session closed');tTab('dash');
+}
+
+let allSessions=[];
+async function loadTeacherSessions(){
+  const d=await api('/teacher/sessions');
+  allSessions=d?.sessions||[];
+  renderSessions(allSessions);
+}
+function filterSess(f){sessFilter=f;renderSessions(allSessions);}
+function renderSessions(list){
+  const filtered=sessFilter==='ALL'?list:sessFilter==='ACTIVE'?list.filter(s=>s.isActive):list.filter(s=>!s.isActive);
+  document.getElementById('t-sess-list').innerHTML=filtered.map(s=>`
+    <div class="card" style="padding:14px">
+      <div class="flex jb aic"><div><div class="fs-xs fw-b c-p">${s.subjectCode}</div><div class="fw-b">${s.subjectName}</div>
+      <div class="fs-xs c-m">${s.branch} • Sec ${s.section} • ${s.date}</div>
+      <div class="fs-xs c-m">${s.startTime} – ${s.endTime} • ${s.allowedRadiusMeters}m</div></div>
+      <div class="tc"><span class="badge ${s.isActive?'bg-s':'bg-d'}">${s.isActive?'● LIVE':'⏸ CLOSED'}</span>
+      <div class="fw-8 mt-2">${s.presentCount||0}</div><div class="fs-xs c-m">present</div></div></div>
+      <div class="flex gap-s mt-2">
+        <button class="btn btn-sm btn-o" onclick="loadRoster('${s.sessionId}');tTab('roster')">Roster</button>
+        <button class="btn btn-sm btn-s" onclick="window.open('/api/teacher/session/${s.sessionId}/export/excel','_blank')">Excel</button>
+        ${s.isActive?`<button class="btn btn-sm btn-d" onclick="closeSessionById('${s.sessionId}')">Close</button>`:''}
+      </div></div>`).join('')||'<div class="card tc c-m">No sessions found.</div>';
+}
+async function closeSessionById(id){
+  await api('/teacher/session/'+id+'/close','POST',{});
+  toast('Session closed');loadTeacherSessions();
+}
+
+/* ━━━━━━━━━━━━━━━━ ADMIN ━━━━━━━━━━━━━━━━ */
+async function loadAdmin(){
+  const d=await api('/admin/stats');
+  if(!d||!d.success)return;
+  const st=d.stats||{};
+  document.getElementById('a-stats').innerHTML=[
+    {n:st.totalStudents||0,l:'Total Students',c:'var(--primary)'},
+    {n:st.totalTeachers||0,l:'Faculty Members',c:'var(--success)'},
+    {n:st.defaulterCount||0,l:'Defaulters (<75%)',c:'var(--danger)'},
+    {n:st.totalSubjects||0,l:'Active Subjects',c:'var(--warn)'}
+  ].map(x=>`<div class="card stat"><div class="num" style="color:${x.c}">${x.n}</div><div class="lbl2">${x.l}</div></div>`).join('');
+
+  // Departments
+  const depts=await api('/admin/departments');
+  document.getElementById('a-depts').innerHTML=(depts?.departments||[]).map(dp=>`
+    <div class="card" style="padding:14px"><div class="fw-b">${dp.name}</div>
+    <div class="fs-xs c-m">Code: ${dp.code} • HOD: ${dp.headOfDept||'—'}</div>
+    <div class="fs-xs c-m">Sections: ${(dp.sections||[]).join(', ')}</div></div>`).join('');
+
+  // Defaulters
+  document.getElementById('a-def-body').innerHTML=(d.defaultersList||[]).map(x=>`
+    <tr><td class="fw-b">${x.rollNumber}</td><td>${x.fullName}</td><td>${x.branch}</td><td>${x.section}</td>
+    <td><span class="badge bg-d">${x.percentage}%</span></td></tr>`).join('')||'<tr><td colspan="5" class="tc c-m">No defaulters.</td></tr>';
+
+  // Photo approvals
+  document.getElementById('a-photo-list').innerHTML=(d.pendingPhotos||[]).map(p=>{
+    const img=p.photoPendingUrl||p.profilePhotoUrl||'';
+    return `<div class="card tc" id="ph-${p.rollNumber}"><img class="avatar-lg" src="${img}" style="display:block;margin:0 auto 8px">
+    <div class="fw-b fs-s">${p.fullName||'—'}</div><div class="fs-xs c-m mb-2">${p.rollNumber}</div>
+    <div class="flex jc gap-s"><button class="btn btn-s btn-sm" onclick="approvePhoto('${p.rollNumber}','APPROVE')">Approve</button>
+    <button class="btn btn-d btn-sm" onclick="approvePhoto('${p.rollNumber}','REJECT')">Reject</button></div></div>`;
+  }).join('')||(d.pendingPhotos?.length===0?'<div class="card tc c-m">No pending approvals.</div>':'');
+
+  // Audit logs
+  document.getElementById('a-log-body').innerHTML=(d.recentLogs||[]).map(l=>`
+    <tr><td class="fs-xs fw-b c-p">${l.action}</td><td class="fw-b fs-s">${l.userId}</td>
+    <td><span class="badge bg-p">${l.userRole}</span></td>
+    <td class="fs-xs c-m">${l.timestamp?new Date(l.timestamp).toLocaleString():''}</td></tr>`).join('');
+}
+
+async function approvePhoto(roll,action){
+  await api('/admin/approve-photo','POST',{rollNumber:roll,action:action});
+  const el=document.getElementById('ph-'+roll);if(el)el.remove();
+  toast(action==='APPROVE'?'Photo approved':'Photo rejected');
+}
+
+/* ━━━━━━━━━━━━━━━━ BOOT ━━━━━━━━━━━━━━━━ */
+window.onload=function(){
+  const t=localStorage.getItem('stuatten_token');
+  const u=localStorage.getItem('stuatten_user');
+  if(t&&u){
+    try{TOKEN=t;USER=JSON.parse(u);ROLE=USER.role;showApp();}
+    catch(e){doLogout();}
+  }
+};
+</script>
+</body>
+</html>
