@@ -29,7 +29,7 @@ async function api(method, path, body) {
 
 export const apiService = {
   // Auth
-  login:    (id, password, role) => api('POST', '/auth/login', { id, password, role }),
+  login:    (id, password, role) => api('POST', '/auth/login', { id, identifier: id, password, role }),
   register: (payload)            => api('POST', '/auth/register', payload),
 
   // Teacher

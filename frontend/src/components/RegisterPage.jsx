@@ -15,7 +15,13 @@ export default function RegisterPage({ onNavigate }) {
     setErr(''); setMsg('');
     if (form.password !== form.confirm) { setErr('Passwords do not match.'); return; }
     setLoading(true);
-    const res = await apiService.register({ ...form, role });
+    const res = await apiService.register({
+      ...form,
+      identifier: form.id,
+      rollNumber: form.id,
+      facultyId: form.id,
+      role
+    });
     setLoading(false);
     if (res.ok) {
       setMsg('✅ Registered successfully! You can now log in.');

@@ -82,7 +82,8 @@ function isMongoConnected() {
 // ─── Login Handler ────────────────────────────────────────────────────────────
 exports.login = async (req, res) => {
   try {
-    const { identifier, password, role, deviceId } = req.body;
+    const { identifier: rawIdentifier, id: rawId, rollNumber, facultyId, password, role, deviceId } = req.body;
+    const identifier = (rawIdentifier || rawId || rollNumber || facultyId)?.toString()?.trim();
 
     if (!identifier || !password || !role) {
       return res.status(400).json({ success: false, message: 'Identifier, password, and role are required.' });
@@ -177,6 +178,7 @@ exports.register = async (req, res) => {
     const {
       role = 'STUDENT',
       fullName,
+      id: rawId,
       identifier,
       rollNumber,
       facultyId,
@@ -186,14 +188,15 @@ exports.register = async (req, res) => {
       branch = 'CSE',
       year = '3rd Year',
       semester = '5th Sem',
-      section = 'A',
-      department = 'CSE',
+      section,
+      class: studentClass,
+      department,
       assignedSubjects = ['KCS-501'],
       profilePhotoUrl
     } = req.body;
 
     const userRole = role.toUpperCase();
-    const id = (userRole === 'STUDENT' ? (rollNumber || identifier) : (facultyId || identifier))?.toUpperCase()?.trim();
+    const id = (userRole === 'STUDENT' ? (rollNumber || identifier || rawId) : (facultyId || identifier || rawId))?.toString()?.toUpperCase()?.trim();
 
     if (!id || !fullName || !password) {
       return res.status(400).json({
@@ -202,6 +205,8 @@ exports.register = async (req, res) => {
       });
     }
 
+    const resolvedSection = (section || studentClass || 'A').toString().toUpperCase();
+    const resolvedDepartment = (department || branch || 'CSE').toString().toUpperCase();
     const defaultPhoto = profilePhotoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=4F46E5&color=fff&size=120`;
 
     // ── Save to MongoDB if connected ──────────────────────────────────────────
@@ -226,7 +231,7 @@ exports.register = async (req, res) => {
             branch: branch.toUpperCase(),
             year,
             semester,
-            section: section.toUpperCase(),
+            section: resolvedSection,
             profilePhotoUrl: defaultPhoto,
             photoApproved: true
           });
@@ -243,7 +248,7 @@ exports.register = async (req, res) => {
             email: email || `${id.toLowerCase()}@aktu-college.edu.in`,
             mobileNumber: mobileNumber || '9876543210',
             password: hashedPassword,
-            department: department.toUpperCase(),
+            department: resolvedDepartment,
             assignedSubjects: Array.isArray(assignedSubjects) ? assignedSubjects : [assignedSubjects]
           });
           await newTeacher.save();
@@ -266,7 +271,7 @@ exports.register = async (req, res) => {
         branch: branch.toUpperCase(),
         year,
         semester,
-        section: section.toUpperCase(),
+        section: resolvedSection,
         profilePhotoUrl: defaultPhoto,
         photoApproved: true
       };
@@ -281,7 +286,7 @@ exports.register = async (req, res) => {
         email: email || `${id.toLowerCase()}@aktu-college.edu.in`,
         mobileNumber: mobileNumber || '9876543210',
         password,
-        department: department.toUpperCase(),
+        department: resolvedDepartment,
         assignedSubjects: Array.isArray(assignedSubjects) ? assignedSubjects : [assignedSubjects]
       };
       if (existingIdx >= 0) FALLBACK_USERS.TEACHER[existingIdx] = teacherObj;
@@ -292,12 +297,16 @@ exports.register = async (req, res) => {
       success: true,
       message: `${userRole === 'STUDENT' ? 'Student' : 'Faculty'} registered successfully! You can now log in.`,
       user: {
+        id,
         identifier: id,
+        rollNumber: userRole === 'STUDENT' ? id : undefined,
+        facultyId: userRole === 'TEACHER' ? id : undefined,
         role: userRole,
         fullName,
-        email,
-        branch,
-        department
+        email: email || (userRole === 'STUDENT' ? `${id.toLowerCase()}@student.aktu.ac.in` : `${id.toLowerCase()}@aktu-college.edu.in`),
+        branch: branch.toUpperCase(),
+        department: resolvedDepartment,
+        section: resolvedSection
       }
     });
   } catch (err) {
