@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 
-export default function LoginScreen() {
+export default function LoginScreen({ onNavigateToRegister }) {
   const { theme, login, toggleTheme, themeMode } = useAuth();
   const [role, setRole] = useState('STUDENT'); // 'STUDENT' | 'TEACHER' | 'ADMIN'
   const [identifier, setIdentifier] = useState('2100270100001');
@@ -138,6 +138,12 @@ export default function LoginScreen() {
             </Text>
           </TouchableOpacity>
         )}
+
+        <TouchableOpacity onPress={onNavigateToRegister} style={{ marginTop: 14, padding: 4 }}>
+          <Text style={{ color: theme.accentPrimary, fontSize: 13, textAlign: 'center', fontWeight: 'bold' }}>
+            New Student / Teacher? Register here
+          </Text>
+        </TouchableOpacity>
 
         <Text style={[styles.footerText, { color: theme.textSecondary }]}>
           Protected by Geofence & Device Lock Security

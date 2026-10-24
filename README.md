@@ -16,8 +16,25 @@ An **Android-first & Web-compatible Smart Biometric Attendance Management System
 - **Zero-Proxy Guarantee**: Enforce physical presence inside the classroom through GPS Geofencing (50m strict radius) and biometric validation.
 - **Role-Based Access Control**: Tailored portals for **Students**, **Teachers**, and **College Administrators**.
 - **Dynamic Session Control**: Real-time lecture session creation with dynamic QR codes, live rosters, and manual override capabilities.
-- **Instant Analytics & Reports**: Automatic calculation of subject-wise attendance percentages, defaulter detection (<75%), and one-click export to **Excel (.xlsx)** and **PDF**.
+- **Instant Analytics & Reports**: Automatic calculation of subject-wise attendance percentages, defaulter detection (<75%), and one-click export to **Excel (.xlsx/.csv)** and **PDF**.
 - **AKTU Compatible**: Built to align with Dr. A.P.J. Abdul Kalam Technical University roll number formatting, semester layouts, and curriculum compliance.
+
+---
+
+## 📑 Application Pages & Verification Modules
+
+| # | Page / Module | Status | Description |
+| :-: | :--- | :-: | :--- |
+| 1 | **Landing Page** | ✅ Implemented | Modern responsive portal introducing Stuatten, core capabilities, security highlights, and direct CTAs. |
+| 2 | **Login Page** | ✅ Implemented | Secure multi-role login with role switching (Student, Faculty, Admin) and 1-click demo autofill. |
+| 3 | **Registration Page** | ✅ Implemented | Interactive onboarding for new students (AKTU 13-digit roll, branch, sem) and faculty members. |
+| 4 | **Teacher Dashboard** | ✅ Implemented | Session launcher with dynamic QR codes, live attendance roster, and manual override controls. |
+| 5 | **Student Dashboard** | ✅ Implemented | Live overall attendance gauge, active lecture banner, defaulter alert (<75%), and subject stats. |
+| 6 | **Attendance Page** | ✅ Implemented | Guided 5-step anti-proxy attendance flow ensuring end-to-end identity and physical presence. |
+| 7 | **Location Verification** | ✅ Implemented | Real browser Geolocation permission (`navigator.geolocation`) validating 50m classroom boundary via Haversine. |
+| 8 | **Biometric Verification** | ✅ Implemented | WebAuthn & Passkeys API (`window.PublicKeyCredential`) for Windows Hello, Touch ID, Face ID, and Fingerprint. |
+| 9 | **Attendance History** | ✅ Implemented | Comprehensive filterable lecture log with geofence distance logs, verification methods, and timestamps. |
+| 10 | **Reports Page & Excel Export** | ✅ Implemented | Summary KPI cards, interactive filters (subject/section/status), and 1-click **Excel (.csv/.xlsx)** download. |
 
 ---
 

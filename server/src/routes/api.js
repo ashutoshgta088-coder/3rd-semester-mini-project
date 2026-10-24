@@ -9,6 +9,7 @@ const { verifyToken, verifyRole } = require('../middleware/authMiddleware');
 
 // ─── Public Auth Routes ───────────────────────────────────────────────────────
 router.post('/auth/login', authController.login);
+router.post('/auth/register', authController.register);
 
 // ─── Student Routes ───────────────────────────────────────────────────────────
 router.get('/student/profile', verifyToken, verifyRole(['STUDENT']), studentController.getStudentProfile);

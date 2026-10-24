@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './src/context/AuthContext';
 
 // Auth
 import LoginScreen from './src/screens/auth/LoginScreen';
+import RegisterScreen from './src/screens/auth/RegisterScreen';
 
 // Student Screens
 import StudentDashboard from './src/screens/student/StudentDashboard';
@@ -11,6 +12,9 @@ import MarkAttendanceScreen from './src/screens/student/MarkAttendanceScreen';
 import StudentProfileScreen from './src/screens/student/StudentProfileScreen';
 import AttendanceHistoryScreen from './src/screens/student/AttendanceHistoryScreen';
 import NotificationsScreen from './src/screens/student/NotificationsScreen';
+
+// Common Screens
+import ReportsScreen from './src/screens/common/ReportsScreen';
 
 // Teacher Screens
 import TeacherDashboard from './src/screens/teacher/TeacherDashboard';
@@ -23,11 +27,20 @@ import AdminDashboard from './src/screens/admin/AdminDashboard';
 
 function MainNavigator() {
   const { user, theme, themeMode } = useAuth();
+  const [authView, setAuthView] = useState('LOGIN'); // 'LOGIN' | 'REGISTER'
   const [currentScreen, setCurrentScreen] = useState('DASHBOARD');
   const [screenParams, setScreenParams] = useState({});
 
   if (!user) {
-    return <LoginScreen />;
+    if (authView === 'REGISTER') {
+      return (
+        <RegisterScreen
+          onNavigateToLogin={() => setAuthView('LOGIN')}
+          onBack={() => setAuthView('LOGIN')}
+        />
+      );
+    }
+    return <LoginScreen onNavigateToRegister={() => setAuthView('REGISTER')} />;
   }
 
   const navigate = (screen, params = {}) => {
@@ -52,6 +65,8 @@ function MainNavigator() {
           return <AttendanceHistoryScreen onBack={goBack} />;
         case 'NOTIFICATIONS':
           return <NotificationsScreen onBack={goBack} />;
+        case 'REPORTS':
+          return <ReportsScreen onBack={goBack} />;
         default:
           return <StudentDashboard onNavigate={navigate} />;
       }
@@ -81,6 +96,8 @@ function MainNavigator() {
               onOpenRoster={(sessionId) => navigate('LIVE_ATTENDANCE', { sessionId })}
             />
           );
+        case 'REPORTS':
+          return <ReportsScreen onBack={goBack} />;
         default:
           return <TeacherDashboard onNavigate={navigate} />;
       }
@@ -91,7 +108,7 @@ function MainNavigator() {
       return <AdminDashboard onNavigate={navigate} />;
     }
 
-    return <LoginScreen />;
+    return <LoginScreen onNavigateToRegister={() => setAuthView('REGISTER')} />;
   };
 
   return (
