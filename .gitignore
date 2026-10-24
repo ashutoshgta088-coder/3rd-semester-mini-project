@@ -6,8 +6,9 @@ server/node_modules/
 # Expo & Build Artifacts
 .expo/
 .expo-shared/
-dist/
 web-build/
+# Keep frontend build so the web app runs immediately after cloning
+!frontend/dist/
 
 # Temporary / OS files
 .DS_Store

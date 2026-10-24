@@ -33,29 +33,43 @@ app.use('/api', limiter);
 // ─── Mount API Routes ─────────────────────────────────────────────────────────
 app.use('/api', apiRoutes);
 
-// ─── Serve Web App (public/index.html) ───────────────────────────────────────
+// ─── Serve Static Files ───────────────────────────────────────────────────────
+// Priority 1: Vite React frontend dist (frontend/dist/)
+const FRONTEND_DIST = path.join(__dirname, '../../frontend/dist');
+// Priority 2: Legacy public dir (server/public/)
 const PUBLIC_DIR = path.join(__dirname, '../public');
-app.use(express.static(PUBLIC_DIR));
 
-// Root route: serve web app or fallback info
+// Serve whichever static dir exists (prefer frontend/dist)
+if (fs.existsSync(FRONTEND_DIST)) {
+  app.use(express.static(FRONTEND_DIST));
+  console.log('📦 Serving React frontend from frontend/dist/');
+} else {
+  app.use(express.static(PUBLIC_DIR));
+  console.log('📦 Serving legacy HTML from server/public/');
+}
+
+// Root route: serve app or fallback info
 app.get('/', (req, res) => {
-  const indexPath = path.join(PUBLIC_DIR, 'index.html');
-  if (fs.existsSync(indexPath)) {
-    return res.sendFile(indexPath);
+  // Try React dist index first
+  const reactIndex = path.join(FRONTEND_DIST, 'index.html');
+  if (fs.existsSync(reactIndex)) {
+    return res.sendFile(reactIndex);
+  }
+  // Fallback: legacy standalone HTML
+  const publicIndex = path.join(PUBLIC_DIR, 'index.html');
+  if (fs.existsSync(publicIndex)) {
+    return res.sendFile(publicIndex);
   }
   res.send(`
     <div style="font-family: system-ui, sans-serif; padding: 2rem; max-width: 800px; margin: 0 auto; text-align: center;">
-      <h1 style="color: #4f46e5; font-size: 2.5rem;">🎓 stuatten</h1>
-      <p style="color: #6b7280;">Smart Biometric Attendance System (AKTU Compatible)</p>
+      <h1 style="color: #4f46e5; font-size: 2.5rem;">🎓 Stuatten</h1>
+      <p style="color: #6b7280;">Bluetooth-Based Smart Attendance System</p>
       <div style="background: #f3f4f6; padding: 1.5rem; border-radius: 12px; font-family: monospace; margin-top: 1.5rem; text-align: left;">
         <p>✅ <strong>API Server Status:</strong> ONLINE</p>
         <p>📍 <strong>Health Check:</strong> <a href="/api/health">/api/health</a></p>
         <p>🔐 <strong>Login Endpoint:</strong> POST /api/auth/login</p>
-        <p>📊 <strong>Version:</strong> 1.0.0</p>
+        <p>📊 <strong>Version:</strong> 2.0.0</p>
       </div>
-      <p style="margin-top: 1rem; color: #9ca3af; font-size: 0.9rem;">
-        Run <code>npx expo start --web</code> to launch the React Native web app.
-      </p>
     </div>
   `);
 });
@@ -63,9 +77,15 @@ app.get('/', (req, res) => {
 // SPA catch-all — must come AFTER API routes
 app.use((req, res, next) => {
   if (req.path.startsWith('/api')) return next();
-  const indexPath = path.join(PUBLIC_DIR, 'index.html');
-  if (fs.existsSync(indexPath)) {
-    return res.sendFile(indexPath);
+  // Try React dist index first
+  const reactIndex = path.join(FRONTEND_DIST, 'index.html');
+  if (fs.existsSync(reactIndex)) {
+    return res.sendFile(reactIndex);
+  }
+  // Fallback: legacy HTML
+  const publicIndex = path.join(PUBLIC_DIR, 'index.html');
+  if (fs.existsSync(publicIndex)) {
+    return res.sendFile(publicIndex);
   }
   next();
 });

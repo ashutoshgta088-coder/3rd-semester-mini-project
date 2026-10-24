@@ -1,11 +1,11 @@
-# stuatten - Smart Biometric Attendance System Launcher
+# Stuatten - Smart Attendance System Launcher
 # Double-click this file or right-click -> Run with PowerShell
 
-$Host.UI.RawUI.WindowTitle = "stuatten Server"
+$Host.UI.RawUI.WindowTitle = "Stuatten Server"
 
 Write-Host ""
 Write-Host " ============================================================" -ForegroundColor Cyan
-Write-Host "   stuatten - Smart Biometric Attendance System (AKTU)" -ForegroundColor Cyan
+Write-Host "   Stuatten - Bluetooth-Based Smart Attendance System" -ForegroundColor Cyan
 Write-Host " ============================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -36,20 +36,12 @@ if ($portProcess) {
     $portProcess | ForEach-Object { 
         Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue 
     }
-    Start-Sleep -Seconds 1
+    Start-Sleep -Seconds 2
 }
-
-# Launch browser after a delay (background job)
-Start-Job -ScriptBlock {
-    Start-Sleep -Seconds 4
-    Start-Process "http://localhost:5000"
-} | Out-Null
 
 Write-Host " [SERVER] Starting at http://localhost:5000 ..." -ForegroundColor Green
 Write-Host ""
 Write-Host " ============================================================" -ForegroundColor Cyan
-Write-Host "  Browser will open automatically in 4 seconds." -ForegroundColor White
-Write-Host ""
 Write-Host "  URL   :  http://localhost:5000" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "  Login Credentials:" -ForegroundColor White
@@ -60,6 +52,12 @@ Write-Host ""
 Write-Host "  Keep this window open. Press Ctrl+C to stop." -ForegroundColor Red
 Write-Host " ============================================================" -ForegroundColor Cyan
 Write-Host ""
+
+# Open browser after server starts (5 second delay)
+Start-Job -ScriptBlock {
+    Start-Sleep -Seconds 5
+    Start-Process "http://localhost:5000"
+} | Out-Null
 
 # Start the server (blocking - keeps window open)
 node src/server.js
