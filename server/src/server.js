@@ -5,10 +5,29 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
+const { Server } = require('socket.io');
 const connectDB = require('./config/db');
 const apiRoutes = require('./routes/api');
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: '*',
+    credentials: true,
+    methods: ['GET', 'POST']
+  }
+});
+
+io.on('connection', (socket) => {
+  console.log('🟢 Socket.IO client connected:', socket.id);
+  socket.on('disconnect', () => {
+    console.log('🔴 Socket.IO client disconnected:', socket.id);
+  });
+});
+
+app.set('io', io);
 const PORT = process.env.PORT || 5000;
 
 // ─── Security Middlewares ─────────────────────────────────────────────────────
@@ -92,7 +111,7 @@ app.use((req, res, next) => {
 
 // ─── Start Server ─────────────────────────────────────────────────────────────
 connectDB().then(() => {
-  app.listen(PORT, '0.0.0.0', () => {
+  server.listen(PORT, '0.0.0.0', () => {
     const os = require('os');
     const nets = os.networkInterfaces();
     let localIP = 'localhost';

@@ -9,7 +9,7 @@ export default function LoginPage({ onLogin, onNavigate }) {
   const [error, setError] = useState('');
 
   const DEMOS = {
-    STUDENT: { id: '2100270100001', password: 'studentpassword' },
+    STUDENT: { id: '2501530100032', password: 'studentpassword' },
     TEACHER: { id: 'T1001',         password: 'teacherpassword' },
     ADMIN:   { id: 'admin',         password: 'adminpassword123' },
   };
@@ -17,18 +17,23 @@ export default function LoginPage({ onLogin, onNavigate }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true); setError('');
-    const res = await apiService.login(id, password, role);
+    const res = await apiService.login(id.trim(), password, role);
     setLoading(false);
-    if (res.ok && res.data.token) {
+    if (res.ok && res.data && res.data.token) {
       onLogin(res.data.user || res.data, res.data.token);
     } else {
-      setError(res.data.message || 'Login failed. Check credentials.');
+      setError(res.data?.message || 'Login failed. Check credentials or register a new account.');
     }
   };
 
-  const fillDemo = () => {
-    setId(DEMOS[role].id);
-    setPassword(DEMOS[role].password);
+  const fillDemo = (altId) => {
+    if (altId) {
+      setId(altId);
+      setPassword('studentpassword');
+    } else {
+      setId(DEMOS[role].id);
+      setPassword(DEMOS[role].password);
+    }
   };
 
   return (
@@ -73,16 +78,21 @@ export default function LoginPage({ onLogin, onNavigate }) {
 
         <hr className="divider" />
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button className="btn btn-outline btn-sm" onClick={fillDemo} style={{ flex: 1 }}>
-            ⚡ Fill Demo ({role})
+          <button className="btn btn-outline btn-sm" onClick={() => fillDemo()} style={{ flex: 1 }}>
+            ⚡ Demo {role === 'STUDENT' ? 'Ashutosh' : role}
           </button>
+          {role === 'STUDENT' && (
+            <button className="btn btn-outline btn-sm" onClick={() => fillDemo('2501530100123')} style={{ flex: 1 }}>
+              ⚡ Demo 123
+            </button>
+          )}
           <button className="btn btn-outline btn-sm" onClick={() => onNavigate('REGISTER')} style={{ flex: 1 }}>
             📝 Register
           </button>
         </div>
 
         <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '.75rem', marginTop: 14 }}>
-          Demo credentials: Roll <strong>2100270100001</strong> / Teacher <strong>T1001</strong>
+          Demo accounts: Student <strong>2501530100032</strong> / <strong>2501530100123</strong> / Teacher <strong>T1001</strong>
         </p>
       </div>
     </div>

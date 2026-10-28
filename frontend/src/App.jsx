@@ -43,7 +43,12 @@ export default function App() {
 
   // ─── Socket.IO connection ─────────────────────────────────────────────────
   useEffect(() => {
-    const serverUrl = window.location.port === '5173' ? 'http://localhost:5000' : window.location.origin;
+    const serverUrl = window.location.port === '5173'
+      ? 'http://localhost:5000'
+      : window.location.hostname.includes('stuatten.onrender.com')
+        ? 'https://stuatten-backend.onrender.com'
+        : window.location.origin;
+
     const s = io(serverUrl, {
       reconnectionAttempts: 10,
       reconnectionDelay: 1000,
@@ -61,8 +66,8 @@ export default function App() {
     localStorage.setItem('stuatten_user', JSON.stringify(userData));
     if (token) localStorage.setItem('stuatten_token', token);
     showToast(`👋 Welcome back, ${userData.fullName || userData.name}!`);
-    const role = (userData.role || '').toUpperCase();
-    setPage(role === 'TEACHER' ? 'TEACHER' : role === 'ADMIN' ? 'ADMIN' : 'STUDENT');
+    // Open the home page after login completes
+    setPage('HOME');
   };
 
   const handleLogout = () => {
@@ -73,11 +78,15 @@ export default function App() {
     showToast('Logged out successfully.');
   };
 
-  // Navigate — if user logged in and tries to go HOME/LOGIN/REGISTER, redirect to dashboard
+  // Navigate — allow open navigation between HOME, DASHBOARD, and auth pages
   const navigate = (p) => {
-    if (user && (p === 'HOME' || p === 'LOGIN' || p === 'REGISTER')) {
-      const role = (user.role || '').toUpperCase();
-      setPage(role === 'TEACHER' ? 'TEACHER' : role === 'ADMIN' ? 'ADMIN' : 'STUDENT');
+    if (p === 'DASHBOARD') {
+      if (user) {
+        const role = (user.role || '').toUpperCase();
+        setPage(role === 'TEACHER' ? 'TEACHER' : role === 'ADMIN' ? 'ADMIN' : 'STUDENT');
+      } else {
+        setPage('LOGIN');
+      }
       return;
     }
     setPage(p);
@@ -112,7 +121,7 @@ export default function App() {
       </div>
 
       <main>
-        {page === 'HOME'     && <LandingPage  onNavigate={navigate} />}
+        {page === 'HOME'     && <LandingPage  user={user} onNavigate={navigate} onLogout={handleLogout} />}
         {page === 'LOGIN'    && <LoginPage    onLogin={handleLogin} onNavigate={navigate} />}
         {page === 'REGISTER' && <RegisterPage onNavigate={navigate} />}
         {page === 'TEACHER'  && user && <TeacherDashboard user={user} socket={socket} />}
