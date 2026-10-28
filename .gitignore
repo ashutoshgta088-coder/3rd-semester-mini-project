@@ -17,6 +17,11 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+__pycache__/
+*.py[cod]
+*.py
+m_noflex.html
+DSA_Lab_BCS351_Programs.pdf
 
 # Editor directories
 .vscode/

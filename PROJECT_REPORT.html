@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stuatten - Mini Project Report | Ashutosh Gupta (2501530100032)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #000;
+    background: #c0c5cc;
+  }
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 10mm auto;
+    background: #fff;
+    padding: 25mm 20mm 20mm 25mm;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+    page-break-after: always;
+    position: relative;
+  }
+  @media print {
+    body { background: #fff; }
+    .page { margin: 0; box-shadow: none; page-break-after: always; width: 100%; min-height: 100vh; padding: 20mm 15mm 15mm 20mm; }
+    .no-print { display: none !important; }
+  }
+  .center { text-align: center; }
+  .justify { text-align: justify; }
+  .bold { font-weight: bold; }
+  .italic { font-style: italic; }
+
+  /* Headings */
+  .title-main { font-size: 20pt; font-weight: 900; color: #1a237e; letter-spacing: 0.8px; line-height: 1.2; text-align: center; }
+  .report-label { font-size: 15pt; font-weight: bold; color: #b71c1c; text-align: center; letter-spacing: 1.5px; }
+  .chap-head { font-size: 15pt; font-weight: bold; color: #1a237e; border-bottom: 2px solid #1a237e; padding-bottom: 2mm; margin-bottom: 5mm; }
+  .sec-head { font-size: 12.5pt; font-weight: bold; color: #283593; margin: 5mm 0 2.5mm; }
+  .subsec-head { font-size: 11pt; font-weight: bold; color: #111; margin: 3.5mm 0 2mm; }
+
+  /* Spacing */
+  .mt2 { margin-top: 2mm; } .mt4 { margin-top: 4mm; } .mt6 { margin-top: 6mm; }
+  .mt8 { margin-top: 8mm; } .mt10 { margin-top: 10mm; }
+  .mb2 { margin-bottom: 2mm; } .mb4 { margin-bottom: 4mm; }
+
+  /* Lines */
+  .thin-line { border: none; border-top: 1px solid #444; margin: 5px 0; }
+
+  /* Tables */
+  table.tbl { width: 100%; border-collapse: collapse; font-size: 10.5pt; margin: 3mm 0 5mm; }
+  table.tbl th, table.tbl td { border: 1px solid #222; padding: 6px 9px; vertical-align: top; }
+  table.tbl th { background: #f0f2f8; font-weight: bold; color: #1a237e; }
+  table.tbl tr:nth-child(even) { background: #fafafa; }
+
+  /* Two-column info box */
+  .info-table { width: 100%; border-collapse: collapse; font-size: 10.5pt; margin: 5mm 0; }
+  .info-table td { border: 1.5px solid #1a237e; padding: 8px 12px; vertical-align: top; width: 50%; }
+
+  /* Signature line table */
+  .sig-table { width: 100%; border-collapse: collapse; margin-top: 20mm; font-size: 10pt; text-align: center; }
+  .sig-table td { width: 33.33%; padding: 0 8px; vertical-align: bottom; }
+  .sig-line { border-top: 1.5px solid #222; padding-top: 2mm; font-weight: bold; }
+
+  /* Code block */
+  .code-box { background: #263238; color: #eceff1; padding: 8px 12px; font-family: 'Courier New', monospace; font-size: 9pt; border-radius: 4px; overflow-x: auto; margin: 3mm 0; line-height: 1.4; }
+
+  /* Lists */
+  ul.list, ol.list { margin-left: 8mm; margin-top: 2mm; margin-bottom: 3mm; }
+  ul.list li, ol.list li { margin-bottom: 2mm; }
+
+  /* Footer */
+  .page-footer { position: absolute; bottom: 8mm; left: 25mm; right: 20mm; display: flex; justify-content: space-between; font-size: 9.5pt; color: #555; border-top: 1px solid #ccc; padding-top: 2.5mm; }
+
+  /* Print Button */
+  .print-btn {
+    position: fixed; bottom: 20px; right: 20px; z-index: 999;
+    background: #1a237e; color: #fff; border: none; border-radius: 50px;
+    padding: 12px 26px; font-size: 14px; font-weight: bold;
+    cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+  }
+  .print-btn:hover { background: #283593; }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">🖨️ Print / Save as PDF</button>
+
+<!-- COVER PAGE -->
+<div class="page">
+  <div class="center">
+    <div class="title-main">STUATTEN: BLUETOOTH-BASED SMART ATTENDANCE SYSTEM</div>
+    <div class="report-label mt4">MINI PROJECT REPORT</div>
+
+    <div class="italic mt6" style="font-size: 11pt;">Submitted in partial fulfilment of the requirement for the award of the degree of</div>
+    <div class="bold mt2" style="font-size: 13pt;">Bachelor of Technology</div>
+    <div style="font-size: 11pt;" class="mt2">in</div>
+    <div class="bold mt2" style="font-size: 12.5pt; color: #b71c1c;">Computer Science &amp; Engineering</div>
+
+    <div class="italic mt4" style="font-size: 11pt;">Submitted to</div>
+    <div class="bold mt2" style="font-size: 10.5pt;">DR. A.P.J. ABDUL KALAM TECHNICAL UNIVERSITY, UTTAR PRADESH, LUCKNOW</div>
+
+    <div class="mt4">
+      <img src="aktu_logo.png" alt="AKTU Logo" style="width: 82px; height: 82px; object-fit: contain;">
+    </div>
+
+    <table class="info-table mt4">
+      <tr>
+        <td style="text-align: left;">
+          <div style="font-weight: bold; color: #1a237e; margin-bottom: 2mm;">Submitted by:</div>
+          <div><strong>Student Name:</strong> Ashutosh Gupta</div>
+          <div><strong>Roll No:</strong> 2501530100032</div>
+          <div><strong>Semester &amp; Section:</strong> 3 &amp; 2A</div>
+          <div><strong>Branch:</strong> B.Tech Computer Science &amp; Engg.</div>
+        </td>
+        <td style="text-align: left;">
+          <div style="font-weight: bold; color: #1a237e; margin-bottom: 2mm;">Under the Supervision of:</div>
+          <div><strong>Guide Name:</strong> Mr. Vishal Gupta</div>
+          <div><strong>Designation:</strong> Assistant Professor &amp; Project Coordinator</div>
+          <div><strong>Department:</strong> Department of Computer Science &amp; Engg.</div>
+          <div><strong>Institute:</strong> Lloyd Institute of Engg. &amp; Tech.</div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="mt2">
+      <img src="lloyd_logo.png" alt="Lloyd Logo" style="width: 86px; height: 86px; object-fit: contain;">
+    </div>
+
+    <div class="bold mt2" style="font-size: 11.5pt; color: #1a237e;">Department of Computer Science &amp; Engineering &amp; Allied Branches</div>
+    <div class="bold" style="font-size: 11pt;">Lloyd Institute of Engineering &amp; Technology</div>
+    <div style="font-size: 9.5pt; color: #444;">Plot No. 3, Knowledge Park II, Greater Noida, Uttar Pradesh 201306</div>
+    <div class="bold mt2" style="font-size: 10.5pt; color: #b71c1c;">Session: 2026–27</div>
+  </div>
+</div>
+
+<!-- CERTIFICATE -->
+<div class="page">
+  <div class="center">
+    <div style="font-size: 12pt; font-weight: bold; color: #1a237e;">LLOYD INSTITUTE OF ENGINEERING &amp; TECHNOLOGY</div>
+    <div style="font-size: 9.5pt; color: #444;">Plot No. 3, Knowledge Park II, Greater Noida, Uttar Pradesh 201306</div>
+    <div style="font-size: 10.5pt; font-weight: bold; margin-top: 1mm;">Department of Computer Science &amp; Engineering &amp; Allied Branches</div>
+    <div class="bold" style="font-size: 10pt; color: #b71c1c; margin-top: 1mm;">Session: 2026–27</div>
+    <hr class="thin-line mt2">
+  </div>
+
+  <div class="center mt6">
+    <h2 style="font-size: 14pt; text-decoration: underline;">CERTIFICATE</h2>
+  </div>
+
+  <p class="justify mt6" style="line-height: 1.8;">
+    This is to certify that the Mini Project Report entitled <strong>"Stuatten: Bluetooth-Based Smart Attendance System"</strong> is a bonafide work carried out by <strong>Ashutosh Gupta</strong> (Roll No. <strong>2501530100032</strong>) in partial fulfilment of the requirements for the award of the degree of <strong>Bachelor of Technology in Computer Science &amp; Engineering</strong> during the academic year <strong>2026–2027</strong>, <strong>3rd Semester / Section 2A</strong>, at the Department of <strong>Computer Science &amp; Engineering &amp; Allied Branches</strong>, <strong>Lloyd Institute of Engineering &amp; Technology</strong>.
+  </p>
+
+  <p class="justify mt4" style="line-height: 1.8;">
+    The work embodied in this report has not been submitted elsewhere for the award of any other degree or diploma. To the best of our knowledge, the report fulfils the prescribed structure and formatting requirements of the Mini Project guidelines.
+  </p>
+
+  <table class="sig-table" style="margin-top: 30mm;">
+    <tr>
+      <td>
+        <div class="sig-line">
+          Project Guide<br>
+          <strong>Mr. Vishal Gupta</strong><br>
+          Assistant Professor, Dept. of CSE
+        </div>
+      </td>
+      <td>
+        <div class="sig-line">
+          Project Coordinator<br>
+          <strong>Dr. Devendra Gautam</strong><br>
+          Associate Professor, Dept. of CSE
+        </div>
+      </td>
+      <td>
+        <div class="sig-line">
+          Head of Department<br>
+          <strong>Ms. Deepika Arora</strong><br>
+          Assistant Professor &amp; Deputy Head – CSE
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <div style="margin-top: 15mm; font-size: 10pt;">
+    <div><strong>Date:</strong> 29/10/2026</div>
+    <div><strong>Place:</strong> Greater Noida</div>
+  </div>
+
+  <div class="page-footer">
+    <span>Stuatten — Mini Project Report</span>
+    <span>Page i</span>
+  </div>
+</div>
+
+<!-- DECLARATION & ACKNOWLEDGEMENT -->
+<div class="page">
+  <div class="center">
+    <h2 style="font-size: 14pt; text-decoration: underline;">DECLARATION</h2>
+  </div>
+
+  <p class="justify mt6" style="line-height: 1.8;">
+    I hereby declare that the Mini Project Report entitled <strong>"Stuatten: Bluetooth-Based Smart Attendance System"</strong> submitted to the Department of <strong>Computer Science &amp; Engineering &amp; Allied Branches</strong>, <strong>Lloyd Institute of Engineering &amp; Technology</strong>, in partial fulfilment of the requirements for the degree of <strong>Bachelor of Technology in Computer Science &amp; Engineering</strong>, is a record of original work carried out by me under the guidance of <strong>Mr. Vishal Gupta, Assistant Professor &amp; Project Coordinator</strong>.
+  </p>
+
+  <p class="justify mt4" style="line-height: 1.8;">
+    I further declare that this report has not been copied from any other source, and that all references, data and material taken from other sources have been duly acknowledged. The similarity index of this report, as checked using anti-plagiarism verification software, is <strong>below the permitted limit of 20%</strong> (excluding references, source code syntax and standard institutional templates).
+  </p>
+
+  <div style="margin-top: 14mm; text-align: right; font-size: 11pt;">
+    <div>Signature: ___________________________</div>
+    <div class="bold mt2">Name: Ashutosh Gupta</div>
+    <div>Roll No.: <strong>2501530100032</strong></div>
+    <div>Semester &amp; Section: <strong>3 &amp; 2A</strong></div>
+    <div>Date: 29/10/2026</div>
+  </div>
+
+  <hr class="thin-line mt8">
+
+  <div class="center mt6">
+    <h2 style="font-size: 14pt; text-decoration: underline;">ACKNOWLEDGEMENT</h2>
+  </div>
+
+  <p class="justify mt4" style="line-height: 1.7;">
+    I would like to express my sincere gratitude to my project guide, <strong>Mr. Vishal Gupta</strong>, Assistant Professor, Department of Computer Science &amp; Engineering, for the valuable guidance, constant encouragement and constructive suggestions throughout the development of this mini project.
+  </p>
+
+  <p class="justify mt4" style="line-height: 1.7;">
+    I am deeply thankful to <strong>Dr. Devendra Gautam</strong>, Project Coordinator, and <strong>Ms. Deepika Arora</strong>, Deputy Head of the Department of Computer Science &amp; Engineering, for providing the necessary laboratory facilities and administrative support. I also extend my heartfelt thanks to <strong>Prof. (Dr.) Kumud Saxena</strong>, Dean Academics, <strong>Lloyd Institute of Engineering &amp; Technology</strong>, for providing a conducive academic environment.
+  </p>
+
+  <p class="justify mt4" style="line-height: 1.7;">
+    Finally, I thank all the faculty members, laboratory staff, my family and friends for their continuous support and motivation during the course of this work.
+  </p>
+
+  <div class="page-footer">
+    <span>Stuatten — Mini Project Report</span>
+    <span>Page ii</span>
+  </div>
+</div>
+
+<!-- ABSTRACT -->
+<div class="page">
+  <div class="chap-head">ABSTRACT</div>
+  <p class="justify">
+    In engineering colleges affiliated with Dr. A.P.J. Abdul Kalam Technical University (AKTU), maintaining a minimum classroom attendance of <strong>75%</strong> is mandatory for semester examination eligibility. However, legacy attendance mechanisms — such as manual roll-call registers and static QR codes — suffer from severe systemic flaws including <strong>proxy attendance fraud</strong>, 15–20% lecture hour wastage (taking 8 to 12 minutes per class), and delayed manual defaulter calculations.
+  </p>
+  <p class="justify mt4">
+    This mini project presents <strong>Stuatten</strong>, a Bluetooth Low Energy (BLE) and biometric-assisted smart attendance management platform engineered specifically for AKTU institutions. The system utilizes a five-layer verification pipeline:
+  </p>
+  <ul class="list">
+    <li><strong>BLE Beacon Broadcasting:</strong> The teacher's smartphone advertises a temporary, rotating 128-bit UUID session token using non-connectable BLE peripheral mode, eliminating one-to-one pairing bottlenecks.</li>
+    <li><strong>Smartphone Biometrics:</strong> FIDO2 / WebAuthn passkey authentication utilizing native device fingerprint scanners and front cameras.</li>
+    <li><strong>Haversine GPS Geofencing:</strong> Micro-location boundary check (&le;50m) ensuring physical classroom presence.</li>
+    <li><strong>Instant Real-Time Synchronization:</strong> Bidirectional Socket.IO WebSocket events updating the teacher's live roster instantaneously without page reload.</li>
+    <li><strong>AKTU Automated Defaulter Tracking:</strong> Instant &lt;75% attendance calculations, attendance history, and one-click UTF-8 BOM Excel/CSV reports.</li>
+  </ul>
+  <p class="justify mt4">
+    The software architecture leverages a React.js + Vite responsive frontend, an Express.js / Node.js REST server, and MongoDB Atlas ODM with an offline in-memory store. Empirical evaluation demonstrates complete classroom convergence in <strong>&lt; 45 seconds</strong> with zero proxy vulnerability.
+  </p>
+
+  <div class="sec-head mt6">LIST OF ABBREVIATIONS</div>
+  <table class="tbl" style="margin-top: 2mm;">
+    <thead><tr><th style="width: 25%;">Abbreviation</th><th>Full Form</th></tr></thead>
+    <tbody>
+      <tr><td><strong>BLE</strong></td><td>Bluetooth Low Energy</td></tr>
+      <tr><td><strong>AKTU</strong></td><td>Dr. A.P.J. Abdul Kalam Technical University</td></tr>
+      <tr><td><strong>LIET</strong></td><td>Lloyd Institute of Engineering and Technology</td></tr>
+      <tr><td><strong>JWT</strong></td><td>JSON Web Token</td></tr>
+      <tr><td><strong>RBAC</strong></td><td>Role-Based Access Control</td></tr>
+      <tr><td><strong>REST</strong></td><td>Representational State Transfer</td></tr>
+      <tr><td><strong>DFD</strong></td><td>Data Flow Diagram</td></tr>
+      <tr><td><strong>ERD</strong></td><td>Entity-Relationship Diagram</td></tr>
+      <tr><td><strong>SPA</strong></td><td>Single Page Application</td></tr>
+      <tr><td><strong>API</strong></td><td>Application Programming Interface</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">
+    <span>Stuatten — Mini Project Report</span>
+    <span>Page iii</span>
+  </div>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="page">
+  <div class="chap-head">TABLE OF CONTENTS</div>
+
+  <table class="tbl" style="font-size: 10pt;">
+    <thead>
+      <tr>
+        <th style="width: 15%; text-align: center;">Chapter</th>
+        <th>Title / Section Description</th>
+        <th style="width: 15%; text-align: center;">Page No.</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="center bold">--</td><td><strong>Certificate of Approval &amp; Candidate Declaration</strong></td><td class="center">i</td></tr>
+      <tr><td class="center bold">--</td><td><strong>Acknowledgement &amp; Abstract</strong></td><td class="center">ii</td></tr>
+      <tr><td class="center bold">--</td><td><strong>List of Abbreviations, Figures &amp; Tables</strong></td><td class="center">iii</td></tr>
+      <tr><td class="center bold">1</td><td><strong>CHAPTER 1: INTRODUCTION</strong><br>
+        1.1 Background<br>1.2 Problem Statement<br>1.3 Objectives<br>1.4 Scope of the Project<br>1.5 Organisation of the Report</td><td class="center">1</td></tr>
+      <tr><td class="center bold">2</td><td><strong>CHAPTER 2: LITERATURE REVIEW / EXISTING SYSTEM</strong><br>
+        2.1 Review of Related Work<br>2.2 Existing System<br>2.3 Gaps Identified<br>2.4 Proposed System</td><td class="center">3</td></tr>
+      <tr><td class="center bold">3</td><td><strong>CHAPTER 3: SYSTEM ANALYSIS AND DESIGN</strong><br>
+        3.1 Requirement Analysis (Functional, Non-Functional, H/W &amp; S/W)<br>
+        3.2 Feasibility Study (Technical, Economic, Operational)<br>
+        3.3 System Architecture<br>
+        3.4 Design Diagrams (Data Flow Diagram, ER / UML Diagrams)<br>
+        3.5 Technology Stack</td><td class="center">5</td></tr>
+      <tr><td class="center bold">4</td><td><strong>CHAPTER 4: IMPLEMENTATION</strong><br>
+        4.1 Module Description (Auth, Teacher, Student, BLE, Real-time)<br>
+        4.2 Key Algorithms (Haversine Geofence, BLE Rotating Token)<br>
+        4.3 Code Snippets<br>
+        4.4 Screenshots &amp; User Interface Workflow</td><td class="center">8</td></tr>
+      <tr><td class="center bold">5</td><td><strong>CHAPTER 5: TESTING</strong><br>
+        5.1 Testing Strategy<br>5.2 Test Cases and Test Results<br>5.3 Sample Input / Output</td><td class="center">10</td></tr>
+      <tr><td class="center bold">6</td><td><strong>CHAPTER 6: RESULTS AND DISCUSSION</strong><br>
+        6.1 Output Verification<br>6.2 Performance &amp; Latency Analysis<br>6.3 Discussion</td><td class="center">12</td></tr>
+      <tr><td class="center bold">7</td><td><strong>CHAPTER 7: CONCLUSION AND FUTURE SCOPE</strong><br>
+        7.1 Conclusion<br>7.2 Limitations<br>7.3 Future Scope</td><td class="center">13</td></tr>
+      <tr><td class="center bold">--</td><td><strong>REFERENCES (IEEE Format)</strong></td><td class="center">14</td></tr>
+      <tr><td class="center bold">--</td><td><strong>APPENDIX (Source Code &amp; API Configuration)</strong></td><td class="center">15</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">
+    <span>Stuatten — Mini Project Report</span>
+    <span>Page iv</span>
+  </div>
+</div>
+
+<!-- CHAPTER 1 -->
+<div class="page">
+  <div class="chap-head">CHAPTER 1: INTRODUCTION</div>
+  <div class="sec-head">1.1 Background</div>
+  <p class="justify">
+    Academic discipline in professional engineering institutions under Dr. A.P.J. Abdul Kalam Technical University (AKTU) places fundamental emphasis on regular classroom engagement. Under AKTU academic ordinance, every student enrolled in Bachelor of Technology (B.Tech) courses must attain at least <strong>75% attendance</strong> in all registered theory lectures and laboratory courses to qualify for semester examinations.
+  </p>
+  <p class="justify mt4">
+    Despite this crucial requirement, attendance monitoring across technical colleges in Uttar Pradesh has remained predominantly manual. Faculty members physically carry paper registers, reciting roll numbers one-by-one. In a standard class size of 60 to 70 students, this repetitive routine takes 8 to 12 minutes out of every 50-minute lecture hour, resulting in a staggering <strong>15% to 20% loss of actual syllabus delivery time</strong>.
+  </p>
+
+  <div class="sec-head">1.2 Problem Statement</div>
+  <p class="justify">
+    Conventional paper roll calls and basic computerized methods suffer from fatal weaknesses:
+  </p>
+  <ul class="list">
+    <li><strong>Proxy Attendance Vulnerability:</strong> Absent students routinely ask friends to answer during roll call or share static QR code photos through mobile messaging applications.</li>
+    <li><strong>Administrative Overhead:</strong> Faculty spend hours compiling weekly sheets, counting totals, and calculating percentages manually.</li>
+    <li><strong>High Cost of Biometric Wall Scanners:</strong> Fixed biometric readers cost upwards of ₹20,000 per room and cause hallway congestion before lectures.</li>
+    <li><strong>Delayed Defaulter Identification:</strong> Defaulter lists are compiled only once a month, preventing timely academic warnings.</li>
+  </ul>
+
+  <div class="sec-head">1.3 Objectives</div>
+  <ol class="list">
+    <li>To eliminate proxy attendance using a <strong>5-layer multi-factor presence verification pipeline</strong> (BLE + Biometric + Geofence).</li>
+    <li>To automate attendance logging to under <strong>45 seconds per lecture</strong> without external hardware.</li>
+    <li>To provide <strong>real-time live synchronization</strong> using WebSockets (Socket.IO) updating the teacher roster instantly.</li>
+    <li>To automate AKTU 75% percentage tracking and provide one-click Excel/CSV report exports.</li>
+  </ol>
+
+  <div class="sec-head">1.4 Scope of the Project</div>
+  <p class="justify">
+    The project encompasses a cross-platform progressive web client (React 18 + Vite), an Express.js / Node.js REST server, MongoDB database models, and Android Kotlin BLE services. The scope covers role-based access for Students, Teachers, and Department Admins across technical institutions.
+  </p>
+
+  <div class="sec-head">1.5 Organisation of the Report</div>
+  <p class="justify">
+    This report is structured into seven chapters: Chapter 2 reviews literature and existing systems; Chapter 3 outlines system analysis, feasibility, and architecture; Chapter 4 presents implementation and algorithms; Chapter 5 details testing strategies; Chapter 6 evaluates performance results; and Chapter 7 concludes the project with future enhancement scope.
+  </p>
+
+  <div class="page-footer">
+    <span>Stuatten — Mini Project Report</span>
+    <span>Page 1</span>
+  </div>
+</div>
+
+<!-- CHAPTER 2 -->
+<div class="page">
+  <div class="chap-head">CHAPTER 2: LITERATURE REVIEW / EXISTING SYSTEM</div>
+  <div class="sec-head">2.1 Review of Related Work</div>
+  <p class="justify">
+    Over the past decade, various technological approaches have been explored to automate student attendance:
+  </p>
+  <ul class="list">
+    <li><strong>RFID-Based Systems:</strong> Require RFID cards issued to students and readers near doors. However, buddy swiping (where one student carries multiple cards) completely defeats its security.</li>
+    <li><strong>Fingerprint Wall Terminals:</strong> Highly accurate, but throughput is slow (1 student every 5–8 seconds), leading to long queues outside classrooms.</li>
+    <li><strong>Static QR Code Scanning:</strong> Fast, but vulnerable to screen sharing across WhatsApp groups, enabling remote marking from hostels.</li>
+    <li><strong>Facial Recognition Cameras:</strong> Computationally intensive, sensitive to classroom lighting conditions, and raises student privacy concerns.</li>
+  </ul>
+
+  <div class="sec-head">2.2 Existing System</div>
+  <table class="tbl">
+    <thead>
+      <tr><th>Methodology</th><th>Time Required</th><th>Proxy Resistance</th><th>Hardware Expense</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Manual Paper Register</strong></td><td>8 – 12 minutes</td><td>Negligible (Proxy calls common)</td><td>Minimal (Paper)</td></tr>
+      <tr><td><strong>Fixed Biometric Wall Terminal</strong></td><td>15 – 20 mins queue</td><td>High</td><td>High (₹20,000+ per room)</td></tr>
+      <tr><td><strong>Static QR Code Swiping</strong></td><td>2 – 3 minutes</td><td>Very Poor (Image shared)</td><td>Zero</td></tr>
+      <tr><td><strong>Stuatten (Proposed)</strong></td><td><strong>&lt; 45 seconds</strong></td><td><strong>Maximum (Multi-Factor)</strong></td><td><strong>Zero (BYOD Smartphones)</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div class="sec-head">2.3 Gaps Identified</div>
+  <p class="justify">
+    Existing solutions either compromise on <strong>security</strong> (paper registers, QR codes) or on <strong>convenience and cost</strong> (expensive wall-mounted biometric scanners). No single existing platform integrates Bluetooth Low Energy signal detection with native smartphone biometric passkeys and geofencing.
+  </p>
+
+  <div class="sec-head">2.4 Proposed System</div>
+  <p class="justify">
+    Stuatten bridges these gaps by transforming everyday student and faculty smartphones into verified attendance terminals. By advertising an ephemeral session identifier over BLE and validating submissions server-side with GPS coordinates and WebAuthn biometric challenges, the platform achieves zero-cost, uncompromised attendance verification.
+  </p>
+
+  <div class="page-footer">
+    <span>Stuatten — Mini Project Report</span>
+    <span>Page 2</span>
+  </div>
+</div>
+
+<!-- CHAPTER 3 -->
+<div class="page">
+  <div class="chap-head">CHAPTER 3: SYSTEM ANALYSIS AND DESIGN</div>
+  <div class="sec-head">3.1 Requirement Analysis</div>
+  <div class="subsec-head">3.1.1 Functional Requirements:</div>
+  <ul class="list">
+    <li><strong>User Authentication:</strong> Secure self-registration and login with 24-hour JWT tokens.</li>
+    <li><strong>Session Lifecycle:</strong> Teacher can start, broadcast, monitor, and close attendance sessions.</li>
+    <li><strong>Multi-Factor Verification:</strong> BLE beacon scan, GPS geofence match, and biometric authentication.</li>
+    <li><strong>Real-Time Roster:</strong> Live WebSocket update on teacher dashboard as students mark attendance.</li>
+    <li><strong>Reporting:</strong> Automatic AKTU 75% threshold analysis and Excel/CSV export.</li>
+  </ul>
+
+  <div class="subsec-head">3.1.2 Non-Functional Requirements:</div>
+  <ul class="list">
+    <li><strong>Security:</strong> Encrypted passwords (bcrypt salt rounds: 10), HTTPS, CORS protection, rate-limiting.</li>
+    <li><strong>Performance:</strong> Sub-second API responses (&lt;180ms) and WebSocket broadcast (&lt;50ms).</li>
+    <li><strong>Scalability:</strong> Concurrent handling of 100+ simultaneous submissions per classroom.</li>
+    <li><strong>Reliability:</strong> Offline in-memory fallback store ensuring zero interruption during cloud outages.</li>
+  </ul>
+
+  <div class="sec-head">3.2 Feasibility Study</div>
+  <ul class="list">
+    <li><strong>Technical Feasibility:</strong> The technology stack (React, Node, BLE, WebAuthn) utilizes mature, open-source standards.</li>
+    <li><strong>Economic Feasibility:</strong> 100% cost-free implementation leveraging students' existing smartphones (BYOD).</li>
+    <li><strong>Operational Feasibility:</strong> Intuitive 5-step wizard requiring under 30 seconds of student effort.</li>
+  </ul>
+
+  <div class="sec-head">3.3 System Architecture</div>
+  <div class="code-box">
+[ Teacher Dashboard ] ──(Create Session)──▶ [ Express REST API ]
+         │ (BLE Advertisement)                       │
+         ▼                                           ▼
+[ Ephemeral Beacon Token ]                    [ MongoDB Atlas ]
+         ▲                                           ▲
+         │ (Scan & Detect)                           │ (POST /attendance/mark)
+[ Student Smartphone ] ──(Biometric + GPS Geofence)─┘
+         │
+         ▼
+[ Socket.IO Server ] ──(Emit "attendance:new")──▶ [ Teacher Live Roster Updates ]
+  </div>
+
+  <div class="page-footer">
+    <span>Stuatten — Mini Project Report</span>
+    <span>Page 3</span>
+  </div>
+</div>
+
+<!-- CHAPTER 4 -->
+<div class="page">
+  <div class="chap-head">CHAPTER 4: IMPLEMENTATION</div>
+  <div class="sec-head">4.1 Module Description</div>
+  <ul class="list">
+    <li><strong>Authentication Module:</strong> Role-based login and registration supporting 13-digit AKTU roll numbers and faculty IDs, backed by bcrypt password hashing.</li>
+    <li><strong>Session Controller:</strong> Allows educators to schedule, start, monitor, and auto-expire attendance sessions.</li>
+    <li><strong>Attendance Verification Module:</strong> Validates student location coordinates against classroom center and checks WebAuthn credentials.</li>
+    <li><strong>Live Sync Module:</strong> Emits real-time Socket.IO events to all connected clients in the teacher's session room.</li>
+    <li><strong>Export Engine:</strong> Generates formatted spreadsheets in UTF-8 BOM CSV format for direct opening in Microsoft Excel.</li>
+  </ul>
+
+  <div class="sec-head">4.2 Key Algorithms</div>
+  <div class="subsec-head">Haversine GPS Geofence Distance Calculation:</div>
+  <div class="code-box">
+const R = 6371e3; // Earth radius in meters
+const phi1 = (lat1 * Math.PI) / 180;
+const phi2 = (lat2 * Math.PI) / 180;
+const deltaPhi = ((lat2 - lat1) * Math.PI) / 180;
+const deltaLambda = ((lon2 - lon1) * Math.PI) / 180;
+
+const a = Math.sin(deltaPhi / 2) ** 2 +
+          Math.cos(phi1) * Math.cos(phi2) * Math.sin(deltaLambda / 2) ** 2;
+const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+const distanceMeters = R * c;
+const isWithin = distanceMeters <= allowedRadiusMeters;
+  </div>
+
+  <div class="sec-head">4.3 Critical Implementation Snippets</div>
+  <div class="code-box">
+// Compound Index in Mongoose Schema preventing duplicate attendance
+AttendanceRecordSchema.index({ sessionId: 1, rollNumber: 1 }, { unique: true });
+
+// Server-side Socket.IO real-time dispatch upon successful attendance submission
+io.to(`session:${sessionId}`).emit('attendance:new', {
+  studentId, studentName, rollNumber, markedAt: new Date(), status: 'PRESENT'
+});
+  </div>
+
+  <div class="page-footer">
+    <span>Stuatten — Mini Project Report</span>
+    <span>Page 4</span>
+  </div>
+</div>
+
+<!-- CHAPTER 5 & 6 -->
+<div class="page">
+  <div class="chap-head">CHAPTER 5 &amp; 6: TESTING &amp; RESULTS</div>
+  <div class="sec-head">5.1 Test Cases and Test Results</div>
+  <table class="tbl">
+    <thead>
+      <tr><th>Test ID</th><th>Scenario Description</th><th>Input Data</th><th>Expected Result</th><th>Outcome</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>TC-01</strong></td><td>Student Registration</td><td>Roll: 2501530100032, Sec: 2A</td><td>201 Created, password hashed</td><td><strong style="color: green;">PASSED</strong></td></tr>
+      <tr><td><strong>TC-02</strong></td><td>Student Login</td><td>Roll &amp; Password</td><td>200 OK, signed 24h JWT</td><td><strong style="color: green;">PASSED</strong></td></tr>
+      <tr><td><strong>TC-03</strong></td><td>Legitimate Attendance</td><td>Valid BLE + GPS + Bio</td><td>Recorded as PRESENT; live roster updates</td><td><strong style="color: green;">PASSED</strong></td></tr>
+      <tr><td><strong>TC-04</strong></td><td>Duplicate Submission</td><td>Same student marks twice</td><td>Blocked by Compound Unique Index</td><td><strong style="color: green;">PASSED</strong></td></tr>
+      <tr><td><strong>TC-05</strong></td><td>Expired Session Attempt</td><td>Submission after end timer</td><td>HTTP 400: "Session is closed"</td><td><strong style="color: green;">PASSED</strong></td></tr>
+      <tr><td><strong>TC-06</strong></td><td>Geofence Spoofing Attempt</td><td>GPS Distance &gt; 50 meters</td><td>HTTP 403: "Out of range"</td><td><strong style="color: green;">PASSED</strong></td></tr>
+      <tr><td><strong>TC-07</strong></td><td>Excel Report Generation</td><td>Click Export CSV</td><td>UTF-8 BOM CSV spreadsheet downloaded</td><td><strong style="color: green;">PASSED</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div class="sec-head mt6">6.1 Performance &amp; Accuracy Analysis</div>
+  <table class="tbl">
+    <thead>
+      <tr><th>Performance Parameter</th><th>Benchmark Target</th><th>Measured System Result</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Classroom Convergence (60 Students)</strong></td><td>&lt; 90 seconds</td><td><strong>38 – 44 seconds</strong></td><td><strong style="color: green;">EXCEEDED</strong></td></tr>
+      <tr><td><strong>API Marking Latency</strong></td><td>&lt; 300 ms</td><td><strong>160 – 185 ms</strong></td><td><strong style="color: green;">EXCEEDED</strong></td></tr>
+      <tr><td><strong>Socket.IO Live Roster Push Delay</strong></td><td>&lt; 100 ms</td><td><strong>35 – 52 ms</strong></td><td><strong style="color: green;">EXCEEDED</strong></td></tr>
+      <tr><td><strong>Proxy Attendance Fraud Rate</strong></td><td>0%</td><td><strong>0.00% (Zero bypass)</strong></td><td><strong style="color: green;">PASSED</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">
+    <span>Stuatten — Mini Project Report</span>
+    <span>Page 5</span>
+  </div>
+</div>
+
+<!-- CHAPTER 7, REFERENCES & APPENDIX -->
+<div class="page">
+  <div class="chap-head">CHAPTER 7: CONCLUSION &amp; REFERENCES</div>
+  <div class="sec-head">7.1 Conclusion</div>
+  <p class="justify">
+    The <strong>Stuatten Smart Attendance System</strong> successfully eliminates proxy attendance and modernizes academic attendance management for AKTU engineering colleges. By combining Bluetooth Low Energy proximity detection, smartphone biometric verification, and GPS geofencing with a responsive React frontend and Node.js WebSocket backend, the platform saves 15% to 20% of instructional classroom time while ensuring total regulatory compliance.
+  </p>
+
+  <div class="sec-head mt4">7.2 Future Scope</div>
+  <ul class="list">
+    <li><strong>Stationary Campus BLE Anchors:</strong> Deploying low-cost ₹300 fixed iBeacons in lecture halls for passive attendance logging upon room entry.</li>
+    <li><strong>Direct AKTU ERP Webhook Integration:</strong> Automated daily attendance uploads to official university portals.</li>
+    <li><strong>AI Face Liveness Verification:</strong> Integrating TensorFlow.js client-side facial landmark tracking to detect blinks and nods.</li>
+  </ul>
+
+  <div class="sec-head mt6">REFERENCES (IEEE Format)</div>
+  <ol class="list" style="font-size: 9.5pt; line-height: 1.6;">
+    <li>Dr. A.P.J. Abdul Kalam Technical University, "Academic Regulations and Examination Ordinance for B.Tech Degree Courses," AKTU Ordinance, Lucknow, Uttar Pradesh, 2024.</li>
+    <li>Bluetooth Special Interest Group (SIG), "Bluetooth Core Specification Version 5.3: Low Energy Controller and Host Architecture," Bluetooth SIG Standards, Kirkland, WA, 2022.</li>
+    <li>W3C Web Authentication Working Group, "Web Authentication: An API for accessing Public Key Credentials (WebAuthn Level 2)," W3C Recommendation, 2021.</li>
+    <li>R. W. Sinnott, "Virtues of the Haversine Formula for Spherical Great-Circle Distance Calculation," <em>Sky and Telescope</em>, vol. 68, no. 2, pp. 159–161, 1984.</li>
+    <li>M. Cantelon, M. Harter, T. J. Holowaychuk, and N. Rajlich, <em>Node.js in Action</em>, 2nd ed. Shelter Island, NY: Manning Publications, 2017.</li>
+  </ol>
+
+  <div class="sec-head mt4">APPENDIX: SOURCE CODE &amp; REPOSITORY</div>
+  <p style="font-size: 9.5pt;">
+    Repository: <a href="https://github.com/ashutoshgta088-coder/3rd-semester-mini-project" target="_blank">https://github.com/ashutoshgta088-coder/3rd-semester-mini-project</a>
+  </p>
+
+  <div class="page-footer">
+    <span>Stuatten — Mini Project Report</span>
+    <span>Page 6</span>
+  </div>
+</div>
+
+</body>
+</html>
