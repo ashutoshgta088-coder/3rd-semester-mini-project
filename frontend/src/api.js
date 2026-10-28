@@ -31,8 +31,10 @@ async function api(method, path, body) {
 
 export const apiService = {
   // Auth
-  login:    (id, password, role) => api('POST', '/auth/login', { id, identifier: id, password, role }),
-  register: (payload)            => api('POST', '/auth/register', payload),
+  login:          (id, password, role) => api('POST', '/auth/login', { id, identifier: id, password, role }),
+  register:       (payload)            => api('POST', '/auth/register', payload),
+  forgotPassword: (payload)            => api('POST', '/auth/forgot-password', payload),
+  resetPassword:  (payload)            => api('POST', '/auth/reset-password', payload),
 
   // Teacher
   createSession:  (payload)     => api('POST', '/teacher/session/create', payload),

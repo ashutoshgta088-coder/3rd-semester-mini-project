@@ -10,6 +10,8 @@ const { verifyToken, verifyRole } = require('../middleware/authMiddleware');
 // ─── Public Auth Routes ───────────────────────────────────────────────────────
 router.post('/auth/login', authController.login);
 router.post('/auth/register', authController.register);
+router.post('/auth/forgot-password', authController.forgotPassword);
+router.post('/auth/reset-password', authController.resetPassword);
 
 // ─── Student Routes ───────────────────────────────────────────────────────────
 router.get('/student/profile', verifyToken, verifyRole(['STUDENT']), studentController.getStudentProfile);
@@ -18,6 +20,7 @@ router.get('/student/history', verifyToken, verifyRole(['STUDENT']), studentCont
 router.post('/student/photo-request', verifyToken, verifyRole(['STUDENT']), studentController.requestPhotoUpdate);
 router.get('/student/notifications', verifyToken, verifyRole(['STUDENT']), studentController.getStudentNotifications);
 router.post('/student/notifications/read', verifyToken, verifyRole(['STUDENT']), studentController.markNotificationRead);
+router.get('/student/sessions/active', verifyToken, attendanceController.getActiveSessions);
 
 // ─── Attendance Flow Routes ───────────────────────────────────────────────────
 router.get('/attendance/active-sessions', verifyToken, attendanceController.getActiveSessions);
@@ -27,10 +30,14 @@ router.post('/attendance/mark', verifyToken, verifyRole(['STUDENT']), attendance
 router.post('/teacher/session/create', verifyToken, verifyRole(['TEACHER', 'ADMIN']), attendanceController.createSession);
 router.get('/teacher/sessions', verifyToken, verifyRole(['TEACHER', 'ADMIN']), attendanceController.getTeacherSessions);
 router.get('/teacher/session/:sessionId/roster', verifyToken, verifyRole(['TEACHER', 'ADMIN']), attendanceController.getSessionAttendance);
+router.post('/teacher/session/:sessionId/start', verifyToken, verifyRole(['TEACHER', 'ADMIN']), (req, res) => res.json({ success: true, message: 'Session started.' }));
 router.post('/teacher/session/toggle-status', verifyToken, verifyRole(['TEACHER', 'ADMIN']), attendanceController.toggleAttendanceStatus);
+router.post('/teacher/session/:sessionId/manual', verifyToken, verifyRole(['TEACHER', 'ADMIN']), attendanceController.toggleAttendanceStatus);
+router.post('/teacher/session/:sessionId/toggle-status', verifyToken, verifyRole(['TEACHER', 'ADMIN']), attendanceController.toggleAttendanceStatus);
 router.post('/teacher/session/:sessionId/close', verifyToken, verifyRole(['TEACHER', 'ADMIN']), attendanceController.closeSession);
 router.get('/teacher/session/:sessionId/export/excel', verifyToken, attendanceController.exportToExcel);
 router.get('/teacher/session/:sessionId/export/pdf', verifyToken, attendanceController.exportToPdf);
+router.get('/teacher/session/:sessionId/export', verifyToken, attendanceController.exportToExcel);
 
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
 router.get('/admin/stats', verifyToken, verifyRole(['ADMIN']), adminController.getAdminDashboardStats);

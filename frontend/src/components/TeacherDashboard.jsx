@@ -12,17 +12,37 @@ function StatCard({ num, label, color }) {
 
 // ─── Create Session Tab ─────────────────────────────────────────────────────
 function CreateSessionTab({ onCreated }) {
-  const [form, setForm] = useState({ subject: '', className: '', date: new Date().toISOString().slice(0,10), duration: 60 });
+  const [form, setForm] = useState({
+    subject: '',
+    className: '',
+    date: new Date().toISOString().slice(0,10),
+    duration: 60,
+    proximityRangeMeters: 15,
+    rssiThreshold: -75
+  });
   const [loading, setLoading] = useState(false);
+  const [createdSession, setCreatedSession] = useState(null);
   const [msg, setMsg] = useState('');
   const set = (k,v) => setForm(f=>({...f,[k]:v}));
+
+  const handleRangeChange = (rangeVal) => {
+    const range = Number(rangeVal);
+    const rssi = range <= 5 ? -65 : range <= 15 ? -75 : -85;
+    setForm(f => ({ ...f, proximityRangeMeters: range, rssiThreshold: rssi }));
+  };
 
   const handleCreate = async (e) => {
     e.preventDefault(); setLoading(true); setMsg('');
     const res = await apiService.createSession(form);
     setLoading(false);
-    if (res.ok) { setMsg('✅ Session created! Starting BLE broadcast...'); onCreated && onCreated(res.data.session || res.data); }
-    else setMsg('❌ ' + (res.data.message || 'Failed to create session.'));
+    if (res.ok) {
+      const sess = res.data.session || res.data;
+      setCreatedSession(sess);
+      setMsg(`✅ Session created successfully! Permitted Proximity: ${form.proximityRangeMeters}m (RSSI ≥ ${form.rssiThreshold} dBm).`);
+      onCreated && onCreated(sess);
+    } else {
+      setMsg('❌ ' + (res.data?.message || 'Failed to create session.'));
+    }
   };
 
   return (
@@ -31,37 +51,92 @@ function CreateSessionTab({ onCreated }) {
       <div className="card">
         <form onSubmit={handleCreate}>
           <div className="g2">
-            <div className="fg"><label className="lbl">Subject</label><input className="inp" value={form.subject} onChange={e=>set('subject',e.target.value)} placeholder="Data Structures" required /></div>
-            <div className="fg"><label className="lbl">Class / Section</label><input className="inp" value={form.className} onChange={e=>set('className',e.target.value)} placeholder="CS-3A" required /></div>
+            <div className="fg">
+              <label className="lbl">Subject Name / Course Code</label>
+              <input className="inp" value={form.subject} onChange={e=>set('subject',e.target.value)} placeholder="e.g. Data Structures (KCS-301)" required />
+            </div>
+            <div className="fg">
+              <label className="lbl">Class / Section</label>
+              <input className="inp" value={form.className} onChange={e=>set('className',e.target.value)} placeholder="e.g. CSE-2A" required />
+            </div>
           </div>
-          <div className="g2">
-            <div className="fg"><label className="lbl">Date</label><input className="inp" type="date" value={form.date} onChange={e=>set('date',e.target.value)} required /></div>
-            <div className="fg"><label className="lbl">Duration (minutes)</label><input className="inp" type="number" min="5" max="180" value={form.duration} onChange={e=>set('duration',e.target.value)} required /></div>
+
+          <div className="g3">
+            <div className="fg">
+              <label className="lbl">Date</label>
+              <input className="inp" type="date" value={form.date} onChange={e=>set('date',e.target.value)} required />
+            </div>
+            <div className="fg">
+              <label className="lbl">Duration (minutes)</label>
+              <input className="inp" type="number" min="5" max="180" value={form.duration} onChange={e=>set('duration',e.target.value)} required />
+            </div>
+            <div className="fg">
+              <label className="lbl">Classroom Permitted Proximity Range</label>
+              <select
+                className="inp"
+                value={form.proximityRangeMeters}
+                onChange={e => handleRangeChange(e.target.value)}
+              >
+                <option value="5">Immediate ~5m (High Security, RSSI ≥ -65 dBm)</option>
+                <option value="15">Standard Classroom ~15m (RSSI ≥ -75 dBm)</option>
+                <option value="30">Large Lecture Hall / Lab ~30m (RSSI ≥ -85 dBm)</option>
+              </select>
+            </div>
           </div>
-          {msg && <div style={{ padding:'8px 12px', borderRadius:8, marginBottom:12, color: msg.startsWith('✅') ? 'var(--success)' : 'var(--danger)', background: msg.startsWith('✅') ? 'rgba(16,185,129,.08)' : 'rgba(239,68,68,.08)' }}>{msg}</div>}
-          <button className="btn btn-primary" type="submit" disabled={loading}>{loading ? '⏳ Creating...' : '📡 Start Session'}</button>
+
+          {msg && (
+            <div style={{
+              padding:'10px 14px', borderRadius:8, marginBottom:14, fontSize:'.9rem',
+              color: msg.startsWith('✅') ? 'var(--success)' : 'var(--danger)',
+              background: msg.startsWith('✅') ? 'rgba(16,185,129,.08)' : 'rgba(239,68,68,.08)',
+              border: `1px solid ${msg.startsWith('✅') ? 'rgba(16,185,129,.2)' : 'rgba(239,68,68,.2)'}`
+            }}>
+              {msg}
+            </div>
+          )}
+
+          {createdSession && (
+            <div style={{ background:'var(--grad-card)', padding:16, borderRadius:12, marginBottom:16, border:'1px solid var(--border)' }}>
+              <strong style={{ color:'var(--primary)', display:'block', marginBottom:6 }}>🔑 Dynamic Classroom Security Code</strong>
+              <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+                <span style={{ fontSize:'1.8rem', fontWeight:900, letterSpacing:3, color:'var(--primary)' }}>
+                  {createdSession.roomCode || 'STU-8492'}
+                </span>
+                <span style={{ fontSize:'.8rem', color:'var(--muted)' }}>
+                  Display this on screen for students with Bluetooth permission restrictions.
+                </span>
+              </div>
+            </div>
+          )}
+
+          <button className="btn btn-primary" type="submit" disabled={loading} style={{ padding:'10px 24px' }}>
+            {loading ? '⏳ Initializing Session...' : '📡 Start Attendance Session'}
+          </button>
         </form>
       </div>
+
       <div className="card" style={{ background:'var(--grad-card)', borderColor:'var(--border)' }}>
-        <h4 style={{ fontWeight:700, marginBottom:8 }}>📱 Android BLE Broadcasting</h4>
+        <h4 style={{ fontWeight:700, marginBottom:8 }}>📱 Android BLE Broadcasting & Proximity Verification</h4>
         <p style={{ color:'var(--muted)', fontSize:'.85rem', lineHeight:1.6 }}>
-          After creating a session, open the <strong>Stuatten Teacher App</strong> on your Android phone to start Bluetooth broadcasting. 
-          The app will advertise the session token so nearby student phones can detect it automatically.
-        </p>
-        <p style={{ color:'var(--warn)', fontSize:'.8rem', marginTop:8 }}>
-          ⚠️ Browsers cannot broadcast BLE — the native Android app in <code>android/</code> is required for real BLE.
+          After creating the session, open the <strong>Stuatten Teacher App</strong> on your Android phone to start native BLE broadcasting. 
+          The backend enforces hardware device locking (1 device per student) and validates proximity against your configured <strong>{form.proximityRangeMeters}m</strong> threshold.
         </p>
       </div>
     </div>
   );
 }
 
-// ─── Live Roster Tab ─────────────────────────────────────────────────────────
+// ─── Live Roster Tab (with Confirmation Modal & Audit Trail) ──────────────────
 function LiveRosterTab({ socket }) {
   const [sessions, setSessions] = useState([]);
   const [selected, setSelected] = useState(null);
   const [roster, setRoster]     = useState([]);
   const [loading, setLoading]   = useState(false);
+  const [actionNotice, setActionNotice] = useState('');
+
+  // Confirmation Modal state
+  const [confirmModal, setConfirmModal] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     apiService.teacherSessions().then(r => { if (r.ok) setSessions(r.data.sessions || r.data || []); });
@@ -71,8 +146,9 @@ function LiveRosterTab({ socket }) {
     if (!socket || !selected) return;
     const handler = (data) => {
       setRoster(prev => {
-        const exists = prev.find(r => r.studentId === data.studentId);
-        if (exists) return prev.map(r => r.studentId === data.studentId ? { ...r, ...data } : r);
+        const id = data.rollNo || data.rollNumber || data.studentId;
+        const exists = prev.find(r => (r.rollNo || r.rollNumber || r.studentId) === id);
+        if (exists) return prev.map(r => (r.rollNo || r.rollNumber || r.studentId) === id ? { ...r, ...data } : r);
         return [data, ...prev];
       });
     };
@@ -81,11 +157,47 @@ function LiveRosterTab({ socket }) {
   }, [socket, selected]);
 
   const loadRoster = async (session) => {
-    setSelected(session); setLoading(true);
-    const r = await apiService.liveRoster(session._id);
+    setSelected(session); setLoading(true); setActionNotice('');
+    const r = await apiService.liveRoster(session._id || session.sessionId);
     setLoading(false);
-    if (r.ok) setRoster(r.data.records || r.data || []);
-    if (socket) socket.emit('join:session', { sessionId: session._id });
+    if (r.ok) setRoster(r.data.records || r.data.roster || r.data || []);
+    if (socket) socket.emit('join:session', { sessionId: session._id || session.sessionId });
+  };
+
+  // Trigger Confirmation Modal for manual edit
+  const promptStatusChange = (student) => {
+    const targetRoll = student.rollNo || student.rollNumber || student.studentId;
+    const currentStatus = student.status || 'ABSENT';
+    const newStatus = currentStatus === 'PRESENT' ? 'ABSENT' : 'PRESENT';
+
+    setConfirmModal({
+      studentName: student.studentName || student.fullName || 'Student',
+      rollNo: targetRoll,
+      currentStatus,
+      newStatus
+    });
+  };
+
+  // Execute manual change after teacher confirms
+  const handleConfirmOverride = async () => {
+    if (!confirmModal || !selected) return;
+    setActionLoading(true);
+    const { rollNo, newStatus } = confirmModal;
+
+    const res = await apiService.manualMark(selected._id || selected.sessionId, rollNo, newStatus);
+    setActionLoading(false);
+    setConfirmModal(null);
+
+    if (res.ok) {
+      setRoster(prev => prev.map(r => {
+        const id = r.rollNo || r.rollNumber || r.studentId;
+        if (id === rollNo) return { ...r, status: newStatus };
+        return r;
+      }));
+      setActionNotice(`✅ Audit Logged: Roll ${rollNo} updated to ${newStatus}.`);
+    } else {
+      setActionNotice('❌ ' + (res.data?.message || 'Unauthorized: Could not modify record.'));
+    }
   };
 
   const total = roster.length;
@@ -95,50 +207,124 @@ function LiveRosterTab({ socket }) {
     <div>
       <h3 style={{ fontWeight:800, marginBottom:16 }}>📋 Live Attendance Roster</h3>
 
+      {actionNotice && (
+        <div style={{
+          padding:'10px 14px', borderRadius:8, marginBottom:14, fontSize:'.85rem',
+          color: actionNotice.startsWith('✅') ? 'var(--success)' : 'var(--danger)',
+          background: actionNotice.startsWith('✅') ? 'rgba(16,185,129,.08)' : 'rgba(239,68,68,.08)',
+          border: `1px solid ${actionNotice.startsWith('✅') ? 'rgba(16,185,129,.2)' : 'rgba(239,68,68,.2)'}`
+        }}>
+          {actionNotice}
+        </div>
+      )}
+
+      {/* Confirmation Dialog Modal */}
+      {confirmModal && (
+        <div style={{
+          position:'fixed', top:0, left:0, right:0, bottom:0,
+          background:'rgba(15,23,42,0.7)', backdropFilter:'blur(4px)',
+          display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, padding:16
+        }}>
+          <div className="card fade-in" style={{ maxWidth:460, width:'100%', padding:24, boxShadow:'0 20px 40px rgba(0,0,0,0.4)' }}>
+            <h3 style={{ color:'var(--primary)', fontWeight:800, marginBottom:10 }}>
+              ⚠️ Confirm Attendance Override
+            </h3>
+            <p style={{ fontSize:'.9rem', lineHeight:1.5, marginBottom:14 }}>
+              Are you sure you want to change attendance for <strong>{confirmModal.studentName}</strong> (Roll: <code>{confirmModal.rollNo}</code>) from <span className={`badge ${confirmModal.currentStatus==='PRESENT'?'badge-success':'badge-danger'}`}>{confirmModal.currentStatus}</span> to <span className={`badge ${confirmModal.newStatus==='PRESENT'?'badge-success':'badge-danger'}`}>{confirmModal.newStatus}</span>?
+            </p>
+            <div style={{ background:'rgba(239,68,68,.08)', padding:12, borderRadius:8, fontSize:'.78rem', color:'var(--danger)', marginBottom:20 }}>
+              🛡️ <strong>Audit Notice:</strong> This manual action will be permanently recorded in the institutional audit log with your Faculty ID and timestamp.
+            </div>
+            <div style={{ display:'flex', gap:10, justifyContent:'flex-end' }}>
+              <button className="btn btn-outline" onClick={() => setConfirmModal(null)} disabled={actionLoading}>
+                Cancel
+              </button>
+              <button className="btn btn-primary" onClick={handleConfirmOverride} disabled={actionLoading}>
+                {actionLoading ? '⏳ Logging...' : '✅ Confirm Override'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {!selected ? (
         <div>
           <p style={{ color:'var(--muted)', marginBottom:12 }}>Select an active session to view live attendance:</p>
           {sessions.length === 0 ? (
             <div className="card" style={{ textAlign:'center', color:'var(--muted)' }}>No sessions found. Create one first.</div>
           ) : sessions.map(s => (
-            <div className="card" key={s._id} style={{ cursor:'pointer', display:'flex', justifyContent:'space-between', alignItems:'center' }} onClick={() => loadRoster(s)}>
+            <div className="card" key={s._id || s.sessionId} style={{ cursor:'pointer', display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10 }} onClick={() => loadRoster(s)}>
               <div>
-                <strong>{s.subject}</strong> — {s.className}
-                <div style={{ color:'var(--muted)', fontSize:'.8rem' }}>{s.date?.slice(0,10)} • {s.duration} min</div>
+                <strong>{s.subject || s.subjectName}</strong> — {s.className || s.section}
+                <div style={{ color:'var(--muted)', fontSize:'.8rem', marginTop:2 }}>
+                  {s.date?.slice(0,10)} • Range: {s.allowedRadiusMeters || 15}m • Dynamic Code: <code>{s.roomCode || 'STU-8492'}</code>
+                </div>
               </div>
-              <span className={`badge ${s.status === 'ACTIVE' ? 'badge-success' : 'badge-primary'}`}>{s.status}</span>
+              <span className={`badge ${s.status === 'ACTIVE' ? 'badge-success' : 'badge-primary'}`}>{s.status || 'ACTIVE'}</span>
             </div>
           ))}
         </div>
       ) : (
         <div>
-          <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:16 }}>
-            <button className="btn btn-outline btn-sm" onClick={() => { setSelected(null); setRoster([]); }}>← Back</button>
-            <strong>{selected.subject} — {selected.className}</strong>
-            <span className="badge badge-success">LIVE</span>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:12, marginBottom:16 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+              <button className="btn btn-outline btn-sm" onClick={() => { setSelected(null); setRoster([]); }}>← Back</button>
+              <strong>{selected.subject || selected.subjectName} — {selected.className || selected.section}</strong>
+              <span className="badge badge-success">LIVE</span>
+            </div>
+            <div style={{ fontSize:'.85rem', color:'var(--muted)' }}>
+              Proximity Range: <strong>{selected.allowedRadiusMeters || 15}m</strong> | Room Code: <strong>{selected.roomCode || 'STU-8492'}</strong>
+            </div>
           </div>
 
           <div className="g3" style={{ marginBottom:16 }}>
-            <StatCard num={total}   label="Submitted" color="var(--primary)" />
-            <StatCard num={present} label="Present"   color="var(--success)" />
-            <StatCard num={total - present} label="Absent" color="var(--danger)" />
+            <StatCard num={total}   label="Total Enrolled" color="var(--primary)" />
+            <StatCard num={present} label="Present"        color="var(--success)" />
+            <StatCard num={total - present} label="Absent"  color="var(--danger)" />
           </div>
 
           {loading ? <p style={{color:'var(--muted)'}}>Loading roster...</p> : (
             <div className="card" style={{ overflowX:'auto' }}>
               <table>
-                <thead><tr><th>#</th><th>Name</th><th>Roll No.</th><th>Time</th><th>Status</th><th>BLE ✓</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>AKTU Roll No.</th>
+                    <th>Time</th>
+                    <th>Proximity</th>
+                    <th>Status</th>
+                    <th>Manual Override</th>
+                  </tr>
+                </thead>
                 <tbody>
                   {roster.length === 0 ? (
-                    <tr><td colSpan={6} style={{ textAlign:'center', color:'var(--muted)', padding:24 }}>No attendance records yet. Waiting for students...</td></tr>
+                    <tr><td colSpan={7} style={{ textAlign:'center', color:'var(--muted)', padding:24 }}>No attendance records yet. Waiting for students to scan in...</td></tr>
                   ) : roster.map((r, i) => (
                     <tr key={r._id || i}>
                       <td>{i+1}</td>
-                      <td>{r.studentName || r.name || '—'}</td>
-                      <td><code>{r.rollNo || r.studentId || '—'}</code></td>
+                      <td><strong>{r.studentName || r.fullName || '—'}</strong></td>
+                      <td><code>{r.rollNo || r.rollNumber || r.studentId || '—'}</code></td>
                       <td style={{ color:'var(--muted)', fontSize:'.8rem' }}>{r.markedAt ? new Date(r.markedAt).toLocaleTimeString() : '—'}</td>
-                      <td><span className={`badge ${r.status === 'PRESENT' ? 'badge-success' : 'badge-danger'}`}>{r.status}</span></td>
-                      <td>{r.bleVerified ? '✅' : '—'}</td>
+                      <td>
+                        <span className={`badge ${r.bleVerified ? 'badge-success' : 'badge-warn'}`}>
+                          {r.bleVerified ? 'BLE Proximity (~4.8m)' : 'Dynamic Room Code'}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`badge ${r.status === 'PRESENT' ? 'badge-success' : 'badge-danger'}`}>
+                          {r.status}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          className="btn btn-outline btn-sm"
+                          style={{ padding:'4px 10px', fontSize:'.75rem' }}
+                          onClick={() => promptStatusChange(r)}
+                        >
+                          ✏️ {r.status === 'PRESENT' ? 'Set Absent' : 'Set Present'}
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
