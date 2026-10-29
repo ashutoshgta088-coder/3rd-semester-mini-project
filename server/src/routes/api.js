@@ -5,6 +5,7 @@ const authController = require('../controllers/authController');
 const attendanceController = require('../controllers/attendanceController');
 const studentController = require('../controllers/studentController');
 const adminController = require('../controllers/adminController');
+const teacherProfileController = require('../controllers/teacherProfileController');
 const { verifyToken, verifyRole } = require('../middleware/authMiddleware');
 
 // ─── Public Auth Routes ───────────────────────────────────────────────────────
@@ -27,6 +28,9 @@ router.get('/attendance/active-sessions', verifyToken, attendanceController.getA
 router.post('/attendance/mark', verifyToken, verifyRole(['STUDENT']), attendanceController.markAttendance);
 
 // ─── Teacher Routes ───────────────────────────────────────────────────────────
+router.get('/teacher/profile', verifyToken, verifyRole(['TEACHER', 'ADMIN']), teacherProfileController.getTeacherProfile);
+router.put('/teacher/profile', verifyToken, verifyRole(['TEACHER', 'ADMIN']), teacherProfileController.updateTeacherProfile);
+router.post('/teacher/session/stop-active', verifyToken, verifyRole(['TEACHER', 'ADMIN']), teacherProfileController.stopActiveSessionsOnLogout);
 router.post('/teacher/session/create', verifyToken, verifyRole(['TEACHER', 'ADMIN']), attendanceController.createSession);
 router.get('/teacher/sessions', verifyToken, verifyRole(['TEACHER', 'ADMIN']), attendanceController.getTeacherSessions);
 router.get('/teacher/session/:sessionId/roster', verifyToken, verifyRole(['TEACHER', 'ADMIN']), attendanceController.getSessionAttendance);

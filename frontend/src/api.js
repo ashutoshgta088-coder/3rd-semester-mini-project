@@ -37,13 +37,16 @@ export const apiService = {
   resetPassword:  (payload)            => api('POST', '/auth/reset-password', payload),
 
   // Teacher
-  createSession:  (payload)     => api('POST', '/teacher/session/create', payload),
-  startSession:   (id)          => api('POST', `/teacher/session/${id}/start`),
-  closeSession:   (id)          => api('POST', `/teacher/session/${id}/close`),
-  liveRoster:     (id)          => api('GET',  `/teacher/session/${id}/roster`),
-  manualMark:     (id, sid, st) => api('POST', `/teacher/session/${id}/manual`, { studentId: sid, status: st }),
-  teacherSessions:()            => api('GET',  '/teacher/sessions'),
-  exportSession:  (id)          => `${BASE}/api/teacher/session/${id}/export`,
+  createSession:        (payload)     => api('POST', '/teacher/session/create', payload),
+  startSession:         (id)          => api('POST', `/teacher/session/${id}/start`),
+  closeSession:         (id)          => api('POST', `/teacher/session/${id}/close`),
+  liveRoster:           (id)          => api('GET',  `/teacher/session/${id}/roster`),
+  manualMark:           (id, sid, st) => api('POST', `/teacher/session/${id}/manual`, { studentId: sid, status: st }),
+  teacherSessions:      ()            => api('GET',  '/teacher/sessions'),
+  teacherProfile:       ()            => api('GET',  '/teacher/profile'),
+  updateTeacherProfile: (payload)     => api('PUT',  '/teacher/profile', payload),
+  stopActiveSessions:   ()            => api('POST', '/teacher/session/stop-active'),
+  exportSession:        (id)          => `${BASE}/api/teacher/session/${id}/export`,
 
   // Student
   activeSessions: ()            => api('GET',  '/student/sessions/active'),

@@ -22,6 +22,7 @@ const OFFLINE_SESSION = {
   startTime: '10:00',
   endTime: '11:00',
   duration: 60,
+  createdAt: new Date().toISOString(),
   location: { latitude: 28.4727, longitude: 77.4890 }, // LIET Greater Noida
   allowedRadiusMeters: 15,
   proximityRangeMeters: 15,
@@ -31,6 +32,21 @@ const OFFLINE_SESSION = {
   isActive: true,
   status: 'ACTIVE'
 };
+exports.OFFLINE_SESSION = OFFLINE_SESSION;
+
+function checkSessionTimeout(session) {
+  if (!session || !session.isActive) return true;
+  const created = session.createdAt ? new Date(session.createdAt).getTime() : null;
+  if (created) {
+    const durationMs = (session.duration || session.durationMinutes || 60) * 60 * 1000;
+    if (Date.now() > (created + durationMs)) {
+      session.isActive = false;
+      session.status = 'CLOSED';
+      return true;
+    }
+  }
+  return false;
+}
 
 const OFFLINE_ROSTER = [
   { studentId: '2501530100032', rollNo: '2501530100032', rollNumber: '2501530100032', studentName: 'Ashutosh Gupta', fullName: 'Ashutosh Gupta', profilePhotoUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80', status: 'PRESENT', bleVerified: true, distanceMeters: 4.8, markedAt: new Date(Date.now() - 1000*60*12).toISOString() },
@@ -191,11 +207,11 @@ exports.markAttendance = async (req, res) => {
       } catch (e) {}
     }
 
-    if (!session || !session.isActive) {
+    if (!session || !session.isActive || checkSessionTimeout(session)) {
       return res.status(400).json({
         success: false,
         code: 'SESSION_EXPIRED',
-        message: 'This attendance session is closed or has expired.'
+        message: 'Attendance Closed: This lecture session has ended or timed out. Submissions are no longer accepted.'
       });
     }
 

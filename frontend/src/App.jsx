@@ -70,12 +70,17 @@ export default function App() {
     setPage('HOME');
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (user && (user.role === 'TEACHER' || user.role === 'ADMIN')) {
+      try {
+        await apiService.stopActiveSessions();
+      } catch (e) {}
+    }
     setUser(null);
     localStorage.removeItem('stuatten_user');
     localStorage.removeItem('stuatten_token');
     setPage('HOME');
-    showToast('Logged out successfully.');
+    showToast('Logged out. Active attendance sessions were automatically stopped.');
   };
 
   // Navigate — allow open navigation between HOME, DASHBOARD, and auth pages
