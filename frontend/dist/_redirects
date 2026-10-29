@@ -1,0 +1,2 @@
+/api/*  https://stuatten-backend.onrender.com/api/:splat  200
+/*      https://stuatten-backend.onrender.com/:splat      302

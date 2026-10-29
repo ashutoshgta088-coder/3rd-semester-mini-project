@@ -43,11 +43,13 @@ export default function App() {
 
   // ─── Socket.IO connection ─────────────────────────────────────────────────
   useEffect(() => {
-    const serverUrl = window.location.port === '5173'
+    const isDev = window.location.port === '5173' || window.location.port === '3000';
+    const isBackendHost = window.location.hostname === 'stuatten-backend.onrender.com';
+    const serverUrl = isDev
       ? 'http://localhost:5000'
-      : window.location.hostname.includes('stuatten.onrender.com')
-        ? 'https://stuatten-backend.onrender.com'
-        : window.location.origin;
+      : isBackendHost
+        ? window.location.origin
+        : 'https://stuatten-backend.onrender.com';
 
     const s = io(serverUrl, {
       reconnectionAttempts: 10,

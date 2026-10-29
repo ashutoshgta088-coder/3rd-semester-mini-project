@@ -1,11 +1,13 @@
 // ─── API Service ───────────────────────────────────────────────────────────────
 // Communicates with the Node.js backend at /api/*
 
-const BASE = (typeof window !== 'undefined' && window.location.port === '5173')
+const isDev = typeof window !== 'undefined' && (window.location.port === '5173' || window.location.port === '3000');
+const isBackendHost = typeof window !== 'undefined' && window.location.hostname === 'stuatten-backend.onrender.com';
+const BASE = isDev
   ? 'http://localhost:5000'
-  : (typeof window !== 'undefined' && window.location.hostname.includes('stuatten.onrender.com'))
-    ? 'https://stuatten-backend.onrender.com'
-    : (import.meta.env?.VITE_API_URL || '');
+  : isBackendHost
+    ? ''
+    : 'https://stuatten-backend.onrender.com';
 
 function getToken() {
   try { return localStorage.getItem('stuatten_token'); } catch { return null; }
